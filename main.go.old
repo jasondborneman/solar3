@@ -1,7 +1,12 @@
 package main
 
-import s3 "github.com/jasondborneman/solar3/Solar3App"
+import (
+	"os"
+
+	s3 "github.com/jasondborneman/solar3/Solar3App"
+)
 
 func main() {
-	s3.Run()
+	doTweet := os.Getenv("DO_TWEET") == "true"
+	s3.Run(doTweet)
 }

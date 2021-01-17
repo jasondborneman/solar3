@@ -23,20 +23,32 @@ func GetData() sd.SolarData {
 	siteID, _ = strconv.Atoi(os.Getenv("SOLAREDGE_SITEID"))
 	latitude := os.Getenv("SOLAR3_LATITUDE")
 	longitude := os.Getenv("SOLAR3_LONGITUDE")
-	var site *se.Site
-	var powerNow *se.Power
+	var site *sd.Site
+	var powerNow *sd.Power
 	var sunMoon *ipgl.SunMoonInfo
 	var openWeather *ow.OpenWeather
 	site, _ = se.GetSolarSiteInfo(siteID)
-	powerNow, _ = se.GetPowerData(siteID)
+	powerNow, _ = se.GetLatestPowerData(siteID)
 	sunMoon, _ = ipgl.GetSunPosition(latitude, longitude)
 	openWeather, _ = ow.GetWeather(latitude, longitude)
 	retVal.Site = site
-	retVal.DateTime = now
+	retVal.DateTimeStored = now
 	for i := range powerNow.PowerDetails.Meters {
 		if powerNow.PowerDetails.Meters[i].Type == "Production" {
 			valueIndex := len(powerNow.PowerDetails.Meters[i].Values) - 1
-			retVal.PowerGen = powerNow.PowerDetails.Meters[i].Values[valueIndex].Value
+			var pd sd.PowerReading
+			pd.Value = powerNow.PowerDetails.Meters[i].Values[valueIndex].Value
+			layout := "2006-01-02 15:04:05"
+			str := powerNow.PowerDetails.Meters[i].Values[valueIndex].Date
+			t, timeParseErr := time.Parse(layout, str)
+
+			if timeParseErr != nil {
+				fmt.Printf("Error parsing power datetime: %s", timeParseErr)
+			}
+			loc, _ := time.LoadLocation("America/Indiana/Indianapolis")
+			pd.Date = t.In(loc).Add(5 * time.Hour)
+			retVal.PowerGen = pd
+			retVal.DateTime = pd.Date
 			break
 		}
 	}
@@ -52,15 +64,15 @@ func GetData() sd.SolarData {
 	return retVal
 }
 
-func Run() {
+func Run(doTweet bool) {
 	var data sd.SolarData
 	data = GetData()
-	xVals, powerYVals, cloudYVals, errSave := s3data.SaveToFirestore(data)
+	xVals, powerYVals, cloudYVals, maxPower, errSave := s3data.SaveToFirestore(data)
 	saved := true
 	if errSave != nil {
 		saved = false
 	}
-	graphBytes := g.CreateGraph(xVals, powerYVals, cloudYVals)
+	graphBytes := g.CreateGraph(xVals, powerYVals, cloudYVals, maxPower)
 	errSaveJpeg := g.SaveGraph(graphBytes, "chart")
 	pngSaved := true
 	if errSaveJpeg != nil {
@@ -72,22 +84,27 @@ Last Reported Power: %.2f
 Cloud Cover: %d
 Sun Azimuth: %.2f
 Sun Altitude: %.2f`
+	loc, _ := time.LoadLocation("America/Indiana/Indianapolis")
+	generatedDate := data.PowerGen.Date.In(loc)
 	message = fmt.Sprintf(
 		message,
 		fmt.Sprintf("%02d-%02d-%d %02d:%02d",
-			data.DateTime.Month(),
-			data.DateTime.Day(),
-			data.DateTime.Year(),
-			data.DateTime.Hour(),
-			data.DateTime.Minute()),
-		data.PowerGen,
+			generatedDate.Month(),
+			generatedDate.Day(),
+			generatedDate.Year(),
+			generatedDate.Hour(),
+			generatedDate.Minute()),
+		data.PowerGen.Value,
 		data.CloudCover,
 		data.SunAzimuth,
 		data.SunAltitude)
-	tweetErr := tw.TweetWithMedia(message, graphBytes)
-	tweeted := true
-	if tweetErr != nil {
-		tweeted = false
+	tweeted := false
+	if doTweet {
+		tweetErr := tw.TweetWithMedia(message, graphBytes)
+		tweeted = true
+		if tweetErr != nil {
+			tweeted = false
+		}
 	}
 	fmt.Println("----------------------------")
 	fmt.Printf("Saved To Firestore?: %t\n", saved)

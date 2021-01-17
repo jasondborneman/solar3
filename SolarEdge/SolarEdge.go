@@ -8,62 +8,9 @@ import (
 	"net/http"
 	"os"
 	"time"
+
+	sd "github.com/jasondborneman/solar3/SolarData"
 )
-
-type Site struct {
-	Details struct {
-		ID               int         `json:"id"`
-		Name             string      `json:"name"`
-		AccountID        int         `json:"accountId"`
-		Status           string      `json:"status"`
-		PeakPower        float64     `json:"peakPower"`
-		LastUpdateTime   string      `json:"lastUpdateTime"`
-		InstallationDate string      `json:"installationDate"`
-		PtoDate          interface{} `json:"ptoDate"`
-		Notes            string      `json:"notes"`
-		Type             string      `json:"type"`
-		Location         struct {
-			Country     string `json:"country"`
-			State       string `json:"state"`
-			City        string `json:"city"`
-			Address     string `json:"address"`
-			Address2    string `json:"address2"`
-			Zip         string `json:"zip"`
-			TimeZone    string `json:"timeZone"`
-			CountryCode string `json:"countryCode"`
-			StateCode   string `json:"stateCode"`
-		} `json:"location"`
-		PrimaryModule struct {
-			ManufacturerName string  `json:"manufacturerName"`
-			ModelName        string  `json:"modelName"`
-			MaximumPower     float64 `json:"maximumPower"`
-		} `json:"primaryModule"`
-		Uris struct {
-			SITEIMAGE      string `json:"SITE_IMAGE"`
-			DATAPERIOD     string `json:"DATA_PERIOD"`
-			INSTALLERIMAGE string `json:"INSTALLER_IMAGE"`
-			DETAILS        string `json:"DETAILS"`
-			OVERVIEW       string `json:"OVERVIEW"`
-		} `json:"uris"`
-		PublicSettings struct {
-			IsPublic bool `json:"isPublic"`
-		} `json:"publicSettings"`
-	} `json:"details"`
-}
-
-type Power struct {
-	PowerDetails struct {
-		TimeUnit string `json:"timeUnit"`
-		Unit     string `json:"unit"`
-		Meters   []struct {
-			Type   string `json:"type"`
-			Values []struct {
-				Date  string  `json:"date"`
-				Value float64 `json:"value"`
-			} `json:"values"`
-		} `json:"meters"`
-	} `json:"powerDetails"`
-}
 
 func callSolarWinds(url string) (*http.Response, error) {
 	var netClient = &http.Client{
@@ -84,7 +31,7 @@ func callSolarWinds(url string) (*http.Response, error) {
 	return resp, nil
 }
 
-func GetSolarSiteInfo(siteId int) (*Site, error) {
+func GetSolarSiteInfo(siteId int) (*sd.Site, error) {
 	solarEdgeKey := os.Getenv("SOLAREDGE_APIKEY")
 	url := fmt.Sprintf("https://monitoringapi.solaredge.com/site/%d/details?api_key=%s", siteId, solarEdgeKey)
 
@@ -93,7 +40,7 @@ func GetSolarSiteInfo(siteId int) (*Site, error) {
 		log.Fatal(fmt.Sprintf("Error loading response for site data: %s", callErr))
 		return nil, callErr
 	}
-	siteInfo := &Site{}
+	siteInfo := &sd.Site{}
 	decodeErr := json.NewDecoder(resp.Body).Decode(&siteInfo)
 	if decodeErr != nil {
 		log.Fatal(fmt.Sprintf("Error decoding Site Info response: %s", decodeErr))
@@ -102,10 +49,19 @@ func GetSolarSiteInfo(siteId int) (*Site, error) {
 	return siteInfo, nil
 }
 
-func GetPowerData(siteId int) (*Power, error) {
+func GetPastDayPowerData(siteId int) (*sd.Power, error) {
+	now := time.Now()
+	then := now.AddDate(0, 0, -1)
+	return getPowerData(siteId, now, then)
+}
+
+func GetLatestPowerData(siteId int) (*sd.Power, error) {
 	now := time.Now()
 	then := now.Add(time.Duration(-15) * time.Minute)
+	return getPowerData(siteId, now, then)
+}
 
+func getPowerData(siteId int, now time.Time, then time.Time) (*sd.Power, error) {
 	location, loadLocErr := time.LoadLocation("America/Indiana/Indianapolis")
 	if loadLocErr != nil {
 		log.Fatal(fmt.Sprintf("Error decoding loading time location response: %s", loadLocErr))
@@ -120,13 +76,12 @@ func GetPowerData(siteId int) (*Power, error) {
 	endTime := fmt.Sprintf("%d-%02d-%d%%20%02d:%02d:%02d", nowLoc.Year(), nowLoc.Month(), nowLoc.Day(), nowLoc.Hour(), nowLoc.Minute(), nowLoc.Second())
 
 	url := fmt.Sprintf("https://monitoringapi.solaredge.com/site/%d/powerDetails.json?startTime=%s&endTime=%s&api_key=%s", siteId, startTime, endTime, solarEdgeKey)
-
 	resp, callErr := callSolarWinds(url)
 	if callErr != nil {
 		log.Fatal(fmt.Sprintf("Error loading response for power data: %s", callErr))
 		return nil, callErr
 	}
-	powerInfo := &Power{}
+	powerInfo := &sd.Power{}
 	decodeErr := json.NewDecoder(resp.Body).Decode(&powerInfo)
 	if decodeErr != nil {
 		log.Fatal(fmt.Sprintf("Error decoding Power Info response: %s", decodeErr))
