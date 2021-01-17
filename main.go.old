@@ -1,0 +1,7 @@
+package main
+
+import s3 "github.com/jasondborneman/solar3/Solar3App"
+
+func main() {
+	s3.Run()
+}

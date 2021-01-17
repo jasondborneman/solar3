@@ -2,14 +2,17 @@ package Solar3App
 
 import (
 	"fmt"
+	"os"
+	"strconv"
+	"time"
+
+	g "github.com/jasondborneman/solar3/Graphing"
 	ipgl "github.com/jasondborneman/solar3/IPGeoLocation"
 	ow "github.com/jasondborneman/solar3/OpenWeather"
 	s3data "github.com/jasondborneman/solar3/Solar3DataStorage"
 	sd "github.com/jasondborneman/solar3/SolarData"
 	se "github.com/jasondborneman/solar3/SolarEdge"
-	"os"
-	"strconv"
-	"time"
+	tw "github.com/jasondborneman/solar3/Twitter"
 )
 
 func GetData() sd.SolarData {
@@ -50,7 +53,7 @@ func GetData() sd.SolarData {
 }
 
 func Run() {
-	var data Solar3Data
+	var data sd.SolarData
 	data = GetData()
 	xVals, yVals, errSave := s3data.SaveToFirestore(data)
 	saved := true
