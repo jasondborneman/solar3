@@ -55,12 +55,12 @@ func GetData() sd.SolarData {
 func Run() {
 	var data sd.SolarData
 	data = GetData()
-	xVals, yVals, errSave := s3data.SaveToFirestore(data)
+	xVals, powerYVals, cloudYVals, errSave := s3data.SaveToFirestore(data)
 	saved := true
 	if errSave != nil {
 		saved = false
 	}
-	graphBytes := g.CreateGraph(xVals, yVals)
+	graphBytes := g.CreateGraph(xVals, powerYVals, cloudYVals)
 	errSaveJpeg := g.SaveGraph(graphBytes, "chart")
 	pngSaved := true
 	if errSaveJpeg != nil {

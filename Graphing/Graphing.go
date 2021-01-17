@@ -1,4 +1,4 @@
-package Graphing
+package graphing
 
 import (
 	"bytes"
@@ -12,7 +12,12 @@ import (
 	"github.com/wcharczuk/go-chart"
 )
 
-func CreateGraph(xVals []float64, yVals []float64) []byte {
+func CreateGraph(xVals []float64, powerYVals []float64, cloudYVals []int64) []byte {
+	cloudYValsFloat := []float64{}
+	for i := range cloudYVals {
+		floatVal := float64(cloudYVals[i])
+		cloudYValsFloat = append(cloudYValsFloat, floatVal)
+	}
 	graph := chart.Chart{
 		XAxis: chart.XAxis{
 			Style: chart.Style{
@@ -36,7 +41,12 @@ func CreateGraph(xVals []float64, yVals []float64) []byte {
 		Series: []chart.Series{
 			chart.ContinuousSeries{
 				XValues: xVals,
-				YValues: yVals,
+				YValues: powerYVals,
+			},
+			chart.ContinuousSeries{
+				YAxis:   chart.YAxisSecondary,
+				XValues: xVals,
+				YValues: cloudYValsFloat,
 			},
 		},
 	}
