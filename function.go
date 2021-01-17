@@ -9,5 +9,6 @@ import (
 
 func Solar3(w http.ResponseWriter, r *http.Request) {
 	doTweet := os.Getenv("DO_TWEET") == "true"
-	s3.Run(doTweet)
+	doSaveGraph := os.Getenv("DO_SAVEGRAPH") == "true"
+	s3.Run(doTweet, doSaveGraph)
 }

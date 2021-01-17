@@ -64,7 +64,7 @@ func GetData() sd.SolarData {
 	return retVal
 }
 
-func Run(doTweet bool) {
+func Run(doTweet bool, doSaveGraph bool) {
 	var data sd.SolarData
 	data = GetData()
 	xVals, powerYVals, cloudYVals, maxPower, errSave := s3data.SaveToFirestore(data)
@@ -73,10 +73,13 @@ func Run(doTweet bool) {
 		saved = false
 	}
 	graphBytes := g.CreateGraph(xVals, powerYVals, cloudYVals, maxPower)
-	errSaveJpeg := g.SaveGraph(graphBytes, "chart")
-	pngSaved := true
-	if errSaveJpeg != nil {
-		pngSaved = false
+	pngSaved := false
+	if doSaveGraph {
+		errSaveJpeg := g.SaveGraph(graphBytes, "chart")
+		pngSaved = true
+		if errSaveJpeg != nil {
+			pngSaved = false
+		}
 	}
 	message := `
 DateTime: %s
