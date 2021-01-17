@@ -1,4 +1,4 @@
-module jborneman/solar3
+module github.com/jasondborneman/solar3
 
 go 1.13
 

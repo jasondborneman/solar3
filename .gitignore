@@ -4,3 +4,4 @@ launch.json
 gcpcred.json
 *.png
 *.tmp
+deploy.sh

@@ -1,31 +1,19 @@
 package Solar3App
 
 import (
-	ipgl "jborneman/solar3/IPGeoLocation"
-	ow "jborneman/solar3/OpenWeather"
-	se "jborneman/solar3/SolarEdge"
+	"fmt"
+	ipgl "github.com/jasondborneman/solar3/IPGeoLocation"
+	ow "github.com/jasondborneman/solar3/OpenWeather"
+	s3data "github.com/jasondborneman/solar3/Solar3DataStorage"
+	sd "github.com/jasondborneman/solar3/SolarData"
+	se "github.com/jasondborneman/solar3/SolarEdge"
 	"os"
 	"strconv"
 	"time"
 )
 
-type Solar3Data struct {
-	Site        *se.Site
-	DateTime    time.Time
-	PowerGen    float64
-	CloudCover  int
-	Temp        float64
-	Pressure    int
-	Humidity    int
-	SunAzimuth  float64
-	SunAltitude float64
-	SnowOneHr   float64
-	RainOneHr   float64
-	WeatherID   int
-}
-
-func GetData() Solar3Data {
-	var retVal Solar3Data
+func GetData() sd.SolarData {
+	var retVal sd.SolarData
 
 	now := time.Now()
 	var siteID int
@@ -59,4 +47,48 @@ func GetData() Solar3Data {
 	retVal.RainOneHr = openWeather.Rain.OneH
 	retVal.WeatherID = openWeather.Weather[0].ID
 	return retVal
+}
+
+func Run() {
+	var data Solar3Data
+	data = GetData()
+	xVals, yVals, errSave := s3data.SaveToFirestore(data)
+	saved := true
+	if errSave != nil {
+		saved = false
+	}
+	graphBytes := g.CreateGraph(xVals, yVals)
+	errSaveJpeg := g.SaveGraph(graphBytes, "chart")
+	pngSaved := true
+	if errSaveJpeg != nil {
+		pngSaved = false
+	}
+	message := `
+DateTime: %s
+Last Reported Power: %.2f
+Cloud Cover: %d
+Sun Azimuth: %.2f
+Sun Altitude: %.2f`
+	message = fmt.Sprintf(
+		message,
+		fmt.Sprintf("%02d-%02d-%d %02d:%02d",
+			data.DateTime.Month(),
+			data.DateTime.Day(),
+			data.DateTime.Year(),
+			data.DateTime.Hour(),
+			data.DateTime.Minute()),
+		data.PowerGen,
+		data.CloudCover,
+		data.SunAzimuth,
+		data.SunAltitude)
+	tweetErr := tw.TweetWithMedia(message, graphBytes)
+	tweeted := true
+	if tweetErr != nil {
+		tweeted = false
+	}
+	fmt.Println("----------------------------")
+	fmt.Printf("Saved To Firestore?: %t\n", saved)
+	fmt.Printf("Saved Graph?:        %t\n", pngSaved)
+	fmt.Printf("Tweeted?:            %t\n", tweeted)
+	fmt.Println(message)
 }

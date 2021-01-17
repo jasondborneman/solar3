@@ -3,9 +3,10 @@ package Solar3DataStorage
 import (
 	"context"
 	"fmt"
-	s3 "jborneman/solar3/Solar3App"
 	"os"
 	"time"
+
+	sd "github.com/jasondborneman/solar3/SolarData"
 
 	"cloud.google.com/go/firestore"
 	"google.golang.org/api/iterator"
@@ -22,7 +23,7 @@ func createClient(ctx context.Context) *firestore.Client {
 	return client
 }
 
-func SaveToFirestore(data s3.Solar3Data) ([]float64, []float64, error) {
+func SaveToFirestore(data sd.SolarData) ([]float64, []float64, error) {
 	ctx := context.Background()
 	dataClient := createClient(ctx)
 	loc, _ := time.LoadLocation("America/Indiana/Indianapolis")

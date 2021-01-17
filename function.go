@@ -2,10 +2,10 @@ package main
 
 import (
 	"fmt"
-	g "jborneman/solar3/Graphing"
-	s3 "jborneman/solar3/Solar3App"
-	s3data "jborneman/solar3/Solar3DataStorage"
-	tw "jborneman/solar3/Twitter"
+	g "github.com/jasondborneman/solar3/Graphing"
+	s3 "github.com/jasondborneman/solar3/Solar3App"
+	s3data "github.com/jasondborneman/solar3/Solar3DataStorage"
+	tw "github.com/jasondborneman/solar3/Twitter"
 )
 
 func Solar3() {
@@ -27,16 +27,7 @@ DateTime: %s
 Last Reported Power: %.2f
 Cloud Cover: %d
 Sun Azimuth: %.2f
-Sun Altitude: %.2f
-Temp(F): %.2f
-Rain(1hr): %.2f
-Snow(1hr): %.2f`
-	if data.RainOneHr == 0 {
-		data.RainOneHr = 0.0
-	}
-	if data.SnowOneHr == 0 {
-		data.SnowOneHr = 0.0
-	}
+Sun Altitude: %.2f`
 	message = fmt.Sprintf(
 		message,
 		fmt.Sprintf("%02d-%02d-%d %02d:%02d",
@@ -48,12 +39,7 @@ Snow(1hr): %.2f`
 		data.PowerGen,
 		data.CloudCover,
 		data.SunAzimuth,
-		data.SunAltitude,
-		data.Temp,
-		data.Pressure,
-		data.Humidity,
-		float64(data.RainOneHr),
-		float64(data.SnowOneHr))
+		data.SunAltitude)
 	tweetErr := tw.TweetWithMedia(message, graphBytes)
 	tweeted := true
 	if tweetErr != nil {
