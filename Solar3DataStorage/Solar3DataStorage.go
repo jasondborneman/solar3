@@ -23,6 +23,53 @@ func createClient(ctx context.Context) *firestore.Client {
 	return client
 }
 
+func UpdatePowerDataAt(powerReading *sd.PowerReading) error {
+	dateTimeNano := powerReading.Date.UnixNano()
+	value := powerReading.Value
+	ctx := context.Background()
+	dataClient := createClient(ctx)
+	fixIter := dataClient.Collection("solar3").Where("dateNano", "==", dateTimeNano).Limit(1).Documents(ctx)
+	doc, getMatchErr := fixIter.Next()
+	if getMatchErr != nil {
+		fmt.Printf("Error getting document to update: %s", getMatchErr)
+	}
+	doc.Ref.Update(ctx, []firestore.Update{
+		{Path: "PowerGen", Value: value},
+		{Path: "DateTimeStored", Value: fmt.Sprintf("%s", time.Now())},
+	})
+	dataClient.Close()
+	return nil
+}
+
+func GetDodgyDataTimesPast24Hrs() []time.Time {
+	var retVal []time.Time
+	ctx := context.Background()
+	dataClient := createClient(ctx)
+	dodgyData := dataClient.Collection("solar3").
+		Where("PowerGen", "==", 0).
+		Where("SunAltitude", ">", 0).
+		Documents(ctx)
+	for {
+		doc, fbReadErr := dodgyData.Next()
+		if fbReadErr == iterator.Done {
+			break
+		}
+		if fbReadErr != nil {
+			fbReadErrMessage := fmt.Sprintf("Failed retrieving solar data for fixing dodgy data: %v", fbReadErr)
+			fmt.Println(fbReadErrMessage)
+			break
+		} else {
+			loc, _ := time.LoadLocation("America/Indiana/Indianapolis")
+			typed := doc.Data()["dateNano"].(int64)
+			typedDate := time.Unix(0, int64(typed)).In(loc)
+			dateTimeToFix := typedDate
+			retVal = append(retVal, dateTimeToFix)
+		}
+	}
+	dataClient.Close()
+	return retVal
+}
+
 func SaveToFirestore(data sd.SolarData) ([]float64, []float64, []int64, float64, error) {
 	ctx := context.Background()
 	dataClient := createClient(ctx)

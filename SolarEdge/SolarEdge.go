@@ -49,31 +49,59 @@ func GetSolarSiteInfo(siteId int) (*sd.Site, error) {
 	return siteInfo, nil
 }
 
-func GetPastDayPowerData(siteId int) (*sd.Power, error) {
-	now := time.Now()
-	then := now.AddDate(0, 0, -1)
-	return getPowerData(siteId, now, then)
-}
-
 func GetLatestPowerData(siteId int) (*sd.Power, error) {
 	now := time.Now()
 	then := now.Add(time.Duration(-15) * time.Minute)
 	return getPowerData(siteId, now, then)
 }
 
-func getPowerData(siteId int, now time.Time, then time.Time) (*sd.Power, error) {
+func GetPowerDataAt(siteId int, targetTime time.Time) (*sd.PowerReading, error) {
+	start := targetTime.Add(-time.Duration(-5) * time.Minute)
+	end := targetTime.Add(time.Duration(5) * time.Minute)
+	pd, err := getPowerData(siteId, end, start)
+	if err != nil {
+		fmt.Sprintf("Error getting power data at [%s]: %s", targetTime, err)
+		return nil, err
+	}
+
+	var retVal *sd.PowerReading
+
+	for i := range pd.PowerDetails.Meters {
+		if pd.PowerDetails.Meters[i].Type == "Production" {
+			valueIndex := len(pd.PowerDetails.Meters[i].Values) - 1
+			var pr *sd.PowerReading
+			pr = new(sd.PowerReading)
+			pr.Value = pd.PowerDetails.Meters[i].Values[valueIndex].Value
+			layout := "2006-01-02 15:04:05"
+			str := pd.PowerDetails.Meters[i].Values[valueIndex].Date
+			t, timeParseErr := time.Parse(layout, str)
+
+			if timeParseErr != nil {
+				fmt.Printf("Error parsing power datetime: %s", timeParseErr)
+			}
+			loc, _ := time.LoadLocation("America/Indiana/Indianapolis")
+			pr.Date = t.In(loc).Add(5 * time.Hour)
+			retVal = pr
+			break
+		}
+	}
+
+	return retVal, nil
+}
+
+func getPowerData(siteId int, end time.Time, start time.Time) (*sd.Power, error) {
 	location, loadLocErr := time.LoadLocation("America/Indiana/Indianapolis")
 	if loadLocErr != nil {
 		log.Fatal(fmt.Sprintf("Error decoding loading time location response: %s", loadLocErr))
 		return nil, loadLocErr
 	}
-	thenLoc := then.In(location)
-	nowLoc := now.In(location)
+	startLoc := start.In(location)
+	endLoc := end.In(location)
 
 	solarEdgeKey := os.Getenv("SOLAREDGE_APIKEY")
 
-	startTime := fmt.Sprintf("%d-%02d-%d%%20%02d:%02d:%02d", thenLoc.Year(), thenLoc.Month(), thenLoc.Day(), thenLoc.Hour(), thenLoc.Minute(), thenLoc.Second())
-	endTime := fmt.Sprintf("%d-%02d-%d%%20%02d:%02d:%02d", nowLoc.Year(), nowLoc.Month(), nowLoc.Day(), nowLoc.Hour(), nowLoc.Minute(), nowLoc.Second())
+	startTime := fmt.Sprintf("%d-%02d-%d%%20%02d:%02d:%02d", startLoc.Year(), startLoc.Month(), startLoc.Day(), startLoc.Hour(), startLoc.Minute(), startLoc.Second())
+	endTime := fmt.Sprintf("%d-%02d-%d%%20%02d:%02d:%02d", endLoc.Year(), endLoc.Month(), endLoc.Day(), endLoc.Hour(), endLoc.Minute(), endLoc.Second())
 
 	url := fmt.Sprintf("https://monitoringapi.solaredge.com/site/%d/powerDetails.json?startTime=%s&endTime=%s&api_key=%s", siteId, startTime, endTime, solarEdgeKey)
 	resp, callErr := callSolarWinds(url)

@@ -36,8 +36,8 @@ func GetData() sd.SolarData {
 	for i := range powerNow.PowerDetails.Meters {
 		if powerNow.PowerDetails.Meters[i].Type == "Production" {
 			valueIndex := len(powerNow.PowerDetails.Meters[i].Values) - 1
-			var pd sd.PowerReading
-			pd.Value = powerNow.PowerDetails.Meters[i].Values[valueIndex].Value
+			var pr sd.PowerReading
+			pr.Value = powerNow.PowerDetails.Meters[i].Values[valueIndex].Value
 			layout := "2006-01-02 15:04:05"
 			str := powerNow.PowerDetails.Meters[i].Values[valueIndex].Date
 			t, timeParseErr := time.Parse(layout, str)
@@ -46,9 +46,9 @@ func GetData() sd.SolarData {
 				fmt.Printf("Error parsing power datetime: %s", timeParseErr)
 			}
 			loc, _ := time.LoadLocation("America/Indiana/Indianapolis")
-			pd.Date = t.In(loc).Add(5 * time.Hour)
-			retVal.PowerGen = pd
-			retVal.DateTime = pd.Date
+			pr.Date = t.In(loc).Add(5 * time.Hour)
+			retVal.PowerGen = pr
+			retVal.DateTime = pr.Date
 			break
 		}
 	}
@@ -109,8 +109,28 @@ Sun Altitude: %.2f`
 			tweeted = false
 		}
 	}
+	dodgyTimes := s3data.GetDodgyDataTimesPast24Hrs()
+	siteID, _ := strconv.Atoi(os.Getenv("SOLAREDGE_SITEID"))
+	fixedCount := 0
+	fixErrCount := 0
+	for i := range dodgyTimes {
+		t := dodgyTimes[i]
+		fixedPower, gpdaErr := se.GetPowerDataAt(siteID, t)
+		if gpdaErr != nil {
+			fmt.Printf("Error getting correct power data at [%s]: %s", t.In(loc), gpdaErr)
+			fixErrCount++
+		}
+		updateErr := s3data.UpdatePowerDataAt(fixedPower)
+		if updateErr != nil {
+			fmt.Printf("Error updating dodgy power data at [%s]: %s", t.In(loc), updateErr)
+		}
+		fixedCount++
+	}
 	fmt.Println("----------------------------")
 	fmt.Printf("Saved To Firestore?: %t\n", saved)
+	fmt.Printf("Dodgy Data Count:    %d\n", len(dodgyTimes))
+	fmt.Printf("Fixed Data Count:    %d\n", fixedCount)
+	fmt.Printf("Fix Data Err Count:  %d\n", fixErrCount)
 	fmt.Printf("Saved Graph?:        %t\n", pngSaved)
 	fmt.Printf("Tweeted?:            %t\n", tweeted)
 	fmt.Println(message)
