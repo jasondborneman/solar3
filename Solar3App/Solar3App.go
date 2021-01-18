@@ -64,49 +64,54 @@ func GetData() sd.SolarData {
 	return retVal
 }
 
-func Run(doTweet bool, doSaveGraph bool) {
-	var data sd.SolarData
-	data = GetData()
-	xVals, powerYVals, cloudYVals, maxPower, errSave := s3data.SaveToFirestore(data)
-	saved := true
-	if errSave != nil {
-		saved = false
-	}
-	graphBytes := g.CreateGraph(xVals, powerYVals, cloudYVals, maxPower)
+func Run(doTweet bool, doSaveGraph bool, fixDodgyDataOnly bool) {
+	loc, _ := time.LoadLocation("America/Indiana/Indianapolis")
+	saved := false
 	pngSaved := false
-	if doSaveGraph {
-		errSaveJpeg := g.SaveGraph(graphBytes, "chart")
-		pngSaved = true
-		if errSaveJpeg != nil {
-			pngSaved = false
+	tweeted := false
+	message := ""
+	if !fixDodgyDataOnly {
+		var data sd.SolarData
+		data = GetData()
+		xVals, powerYVals, cloudYVals, maxPower, errSave := s3data.SaveToFirestore(data)
+		saved = true
+		if errSave != nil {
+			saved = false
 		}
-	}
-	message := `
+		graphBytes := g.CreateGraph(xVals, powerYVals, cloudYVals, maxPower)
+		if doSaveGraph {
+			errSaveJpeg := g.SaveGraph(graphBytes, "chart")
+			pngSaved = true
+			if errSaveJpeg != nil {
+				pngSaved = false
+			}
+		}
+		message = `
 DateTime: %s
 Last Reported Power: %.2f
 Cloud Cover: %d
 Sun Azimuth: %.2f
 Sun Altitude: %.2f`
-	loc, _ := time.LoadLocation("America/Indiana/Indianapolis")
-	generatedDate := data.PowerGen.Date.In(loc)
-	message = fmt.Sprintf(
-		message,
-		fmt.Sprintf("%02d-%02d-%d %02d:%02d",
-			generatedDate.Month(),
-			generatedDate.Day(),
-			generatedDate.Year(),
-			generatedDate.Hour(),
-			generatedDate.Minute()),
-		data.PowerGen.Value,
-		data.CloudCover,
-		data.SunAzimuth,
-		data.SunAltitude)
-	tweeted := false
-	if doTweet {
-		tweetErr := tw.TweetWithMedia(message, graphBytes)
-		tweeted = true
-		if tweetErr != nil {
-			tweeted = false
+		generatedDate := data.PowerGen.Date.In(loc)
+		message = fmt.Sprintf(
+			message,
+			fmt.Sprintf("%02d-%02d-%d %02d:%02d",
+				generatedDate.Month(),
+				generatedDate.Day(),
+				generatedDate.Year(),
+				generatedDate.Hour(),
+				generatedDate.Minute()),
+			data.PowerGen.Value,
+			data.CloudCover,
+			data.SunAzimuth,
+			data.SunAltitude)
+		tweeted = false
+		if doTweet {
+			tweetErr := tw.TweetWithMedia(message, graphBytes)
+			tweeted = true
+			if tweetErr != nil {
+				tweeted = false
+			}
 		}
 	}
 	dodgyTimes := s3data.GetDodgyDataTimesPast24Hrs()
@@ -120,18 +125,23 @@ Sun Altitude: %.2f`
 			fmt.Printf("Error getting correct power data at [%s]: %s", t.In(loc), gpdaErr)
 			fixErrCount++
 		}
-		updateErr := s3data.UpdatePowerDataAt(fixedPower)
-		if updateErr != nil {
-			fmt.Printf("Error updating dodgy power data at [%s]: %s", t.In(loc), updateErr)
+		if fixedPower.Value > 0 {
+			updateErr := s3data.UpdatePowerDataAt(fixedPower)
+			if updateErr != nil {
+				fmt.Printf("Error updating dodgy power data at [%s]: %s", t.In(loc), updateErr)
+			}
+			fixedCount++
 		}
-		fixedCount++
 	}
 	fmt.Println("----------------------------")
-	fmt.Printf("Saved To Firestore?: %t\n", saved)
+	if !fixDodgyDataOnly {
+		fmt.Printf("Saved To Firestore?: %t\n", saved)
+		fmt.Printf("Saved Graph?:        %t\n", pngSaved)
+		fmt.Printf("Tweeted?:            %t\n", tweeted)
+		fmt.Println(message)
+	}
 	fmt.Printf("Dodgy Data Count:    %d\n", len(dodgyTimes))
 	fmt.Printf("Fixed Data Count:    %d\n", fixedCount)
 	fmt.Printf("Fix Data Err Count:  %d\n", fixErrCount)
-	fmt.Printf("Saved Graph?:        %t\n", pngSaved)
-	fmt.Printf("Tweeted?:            %t\n", tweeted)
-	fmt.Println(message)
+
 }

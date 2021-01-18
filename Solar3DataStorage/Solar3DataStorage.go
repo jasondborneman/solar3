@@ -33,6 +33,7 @@ func UpdatePowerDataAt(powerReading *sd.PowerReading) error {
 	if getMatchErr != nil {
 		fmt.Printf("Error getting document to update: %s", getMatchErr)
 	}
+	fmt.Printf("Updating doc [%s] with value %f\n", doc.Ref.ID, value)
 	doc.Ref.Update(ctx, []firestore.Update{
 		{Path: "PowerGen", Value: value},
 		{Path: "DateTimeStored", Value: fmt.Sprintf("%s", time.Now())},
@@ -46,8 +47,9 @@ func GetDodgyDataTimesPast24Hrs() []time.Time {
 	ctx := context.Background()
 	dataClient := createClient(ctx)
 	dodgyData := dataClient.Collection("solar3").
+		OrderBy("dateNano", firestore.Asc).
+		StartAfter(time.Now().AddDate(0, 0, -1).UnixNano()).
 		Where("PowerGen", "==", 0).
-		Where("SunAltitude", ">", 0).
 		Documents(ctx)
 	for {
 		doc, fbReadErr := dodgyData.Next()
@@ -60,10 +62,14 @@ func GetDodgyDataTimesPast24Hrs() []time.Time {
 			break
 		} else {
 			loc, _ := time.LoadLocation("America/Indiana/Indianapolis")
-			typed := doc.Data()["dateNano"].(int64)
-			typedDate := time.Unix(0, int64(typed)).In(loc)
-			dateTimeToFix := typedDate
-			retVal = append(retVal, dateTimeToFix)
+			if doc.Data()["SunAltitude"].(float64) > 0 {
+				// fmt.Printf("potential bad daytime data [%s]: %s | %f | %f\n", doc.Ref.ID, doc.Data()["DateTime"].(time.Time).In(loc), doc.Data()["SunAltitude"].(float64), doc.Data()["PowerGen"].(float64))
+				loc, _ := time.LoadLocation("America/Indiana/Indianapolis")
+				typed := doc.Data()["dateNano"].(int64)
+				typedDate := time.Unix(0, int64(typed)).In(loc)
+				dateTimeToFix := typedDate
+				retVal = append(retVal, dateTimeToFix)
+			}
 		}
 	}
 	dataClient.Close()
