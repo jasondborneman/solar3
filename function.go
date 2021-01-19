@@ -3,7 +3,6 @@ package solar3
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"os"
 
@@ -21,7 +20,6 @@ func Solar3(w http.ResponseWriter, r *http.Request) {
 	}
 
 	stupidAuthLocal := os.Getenv("STUPID_AUTH")
-	fmt.Println(d)
 	if d.StupidAuth == stupidAuthLocal {
 		doTweet := os.Getenv("DO_TWEET") == "true"
 		doSaveGraph := os.Getenv("DO_SAVEGRAPH") == "true"
@@ -29,11 +27,6 @@ func Solar3(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, "Success")
 	} else {
 		w.WriteHeader(http.StatusUnauthorized)
-		bodyBytes, _ := ioutil.ReadAll(r.Body)
-		bodyString := string(bodyBytes)
-		fmt.Printf("Unauthorized access attempt. [%s | %s]\n", d.StupidAuth, stupidAuthLocal)
-		fmt.Printf("%s", bodyString)
-		returnMessage := fmt.Sprintf("Unauthorized. [%s]", bodyString)
-		fmt.Fprint(w, returnMessage)
+		fmt.Fprint(w, "Unauthorized")
 	}
 }
