@@ -8,7 +8,6 @@ on:
 
 jobs:
   build:
-    environment: testing
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -32,4 +31,5 @@ jobs:
         project_id: solar3-301918
         name: solar3_github
         runtime: go113
-        credentials: $GCP_CRED
+        entry_point: Solar3 
+        credentials: ${{ secrets.GCP_CRED }}
