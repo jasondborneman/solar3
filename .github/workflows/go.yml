@@ -1,0 +1,34 @@
+name: Go
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.15
+
+    - id: Build
+      name: Build
+      run: go build -v ./...
+
+    - id: Test
+      name: Test
+      run: go test -v ./...
+      
+    - id: Deploy
+      uses: google-github-actions/deploy-cloud-functions@main
+      with:
+        name: my-function
+        runtime: nodejs10
+        credentials: ${{ secrets.gcp_credentials }}
