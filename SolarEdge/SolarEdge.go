@@ -85,7 +85,7 @@ func GetPowerDataAt(siteId int, targetTime time.Time) (*sd.PowerReading, error) 
 			break
 		}
 	}
-	// fmt.Printf("Got power at [%s]: %f\n", retVal.Date, retVal.Value)
+	fmt.Printf("Got power at [%s]: %f\n", retVal.Date, retVal.Value)
 	return retVal, nil
 }
 
