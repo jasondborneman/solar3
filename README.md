@@ -76,6 +76,15 @@ gcloud functions deploy solar3_github \
 
 it is recommended, if you're going to use the GitHub Action to deploy, to set up the Function first time on the command line, as GitHub Action for deploying to GCP Cloud Functions doesn't allow unauthenticated functions to be deployed from what I can tell, but it won't mess with the setting if it's already there.
 
+## Running locally
+
+Rename function.go -> function.go.old
+Rename main.go.old -> main.go
+```
+$ go build .
+$ ./solar3
+```
+
 ## Future Ideas:
 * Fix the graph to show the secondary Y axis for Sun Altitude.
 * Tie into machine learning to find what data best correlates with high power generation. It's probably pretty obvious (sun altitude & cloud cover) but it'd be interesting to try.
