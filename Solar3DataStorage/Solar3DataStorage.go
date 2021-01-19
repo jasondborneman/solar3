@@ -75,7 +75,7 @@ func GetDodgyDataTimesPast24Hrs() []time.Time {
 	return retVal
 }
 
-func SaveToFirestore(data sd.SolarData) ([]float64, []float64, []int64, float64, error) {
+func SaveToFirestore(data sd.SolarData) ([]float64, []float64, []float64, float64, error) {
 	ctx := context.Background()
 	dataClient := createClient(ctx)
 	_, _, fbErr := dataClient.Collection("solar3").Add(ctx, map[string]interface{}{
@@ -111,7 +111,7 @@ func SaveToFirestore(data sd.SolarData) ([]float64, []float64, []int64, float64,
 
 	xVals := []float64{}
 	powerYVals := []float64{}
-	cloudYVals := []int64{}
+	sunAltVals := []float64{}
 	iter := dataClient.Collection("solar3").OrderBy("dateNano", firestore.Asc).StartAfter(time.Now().AddDate(0, -1, 0).UnixNano()).Documents(ctx)
 	for {
 		doc, fbReadErr := iter.Next()
@@ -125,10 +125,10 @@ func SaveToFirestore(data sd.SolarData) ([]float64, []float64, []int64, float64,
 		} else {
 			xVals = append(xVals, float64(doc.Data()["dateNano"].(int64)))
 			powerYVals = append(powerYVals, float64(doc.Data()["PowerGen"].(float64)))
-			cloudYVals = append(cloudYVals, int64(doc.Data()["CloudCover"].(int64)))
+			sunAltVals = append(sunAltVals, float64(doc.Data()["SunAltitude"].(float64)))
 		}
 	}
 
 	dataClient.Close()
-	return xVals, powerYVals, cloudYVals, maxPower, nil
+	return xVals, powerYVals, sunAltVals, maxPower, nil
 }

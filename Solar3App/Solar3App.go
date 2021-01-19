@@ -73,12 +73,12 @@ func Run(doTweet bool, doSaveGraph bool, fixDodgyDataOnly bool) {
 	if !fixDodgyDataOnly {
 		var data sd.SolarData
 		data = GetData()
-		xVals, powerYVals, cloudYVals, maxPower, errSave := s3data.SaveToFirestore(data)
+		xVals, powerYVals, sunAltVals, maxPower, errSave := s3data.SaveToFirestore(data)
 		saved = true
 		if errSave != nil {
 			saved = false
 		}
-		graphBytes := g.CreateGraph(xVals, powerYVals, cloudYVals, maxPower)
+		graphBytes := g.CreateGraph(xVals, powerYVals, sunAltVals, maxPower)
 		if doSaveGraph {
 			errSaveJpeg := g.SaveGraph(graphBytes, "chart")
 			pngSaved = true

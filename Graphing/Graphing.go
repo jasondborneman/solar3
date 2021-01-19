@@ -12,19 +12,12 @@ import (
 	"github.com/wcharczuk/go-chart"
 )
 
-func CreateGraph(xVals []float64, powerYVals []float64, cloudYVals []int64, maxPower float64) []byte {
-	cloudYValsFloat := []float64{}
-	for i := range cloudYVals {
-		floatVal := float64(cloudYVals[i])
-		cloudYValsFloat = append(cloudYValsFloat, floatVal)
-	}
-
+func CreateGraph(xVals []float64, powerYVals []float64, sunAltVals []float64, maxPower float64) []byte {
 	graph := chart.Chart{
 		XAxis: chart.XAxis{
 			Style: chart.Style{
 				Show: true,
 			},
-			TickPosition: chart.TickPositionBetweenTicks,
 			ValueFormatter: func(v interface{}) string {
 				loc, _ := time.LoadLocation("America/Indiana/Indianapolis")
 				typed := v.(float64)
@@ -43,11 +36,21 @@ func CreateGraph(xVals []float64, powerYVals []float64, cloudYVals []int64, maxP
 		},
 		Series: []chart.Series{
 			chart.ContinuousSeries{
-				YAxis:   chart.YAxisPrimary,
+				Name:    "Power Generated",
 				XValues: xVals,
 				YValues: powerYVals,
 			},
+			chart.ContinuousSeries{
+				Name:    "Sun Altitude",
+				YAxis:   chart.YAxisSecondary,
+				XValues: xVals,
+				YValues: sunAltVals,
+			},
 		},
+	}
+
+	graph.Elements = []chart.Renderable{
+		chart.LegendLeft(&graph),
 	}
 
 	graphBuffer := bytes.NewBuffer([]byte{})
