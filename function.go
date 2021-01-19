@@ -28,7 +28,7 @@ func Solar3(w http.ResponseWriter, r *http.Request) {
 		s3.Run(doTweet, doSaveGraph, false)
 	} else {
 		w.WriteHeader(http.StatusUnauthorized)
-		fmt.Println("Unauthorized access attempt")
+		fmt.Printf("Unauthorized access attempt. [%s | %s]\n", sa.stupidAuth, stupidAuthLocal)
 		fmt.Fprint(w, "Unauthorized")
 	}
 }
