@@ -63,7 +63,7 @@ func GetDodgyDataTimesPast24Hrs() []time.Time {
 		} else {
 			loc, _ := time.LoadLocation("America/Indiana/Indianapolis")
 			if doc.Data()["SunAltitude"].(float64) > 0 {
-				// fmt.Printf("potential bad daytime data [%s]: %s | %f | %f\n", doc.Ref.ID, doc.Data()["DateTime"].(time.Time).In(loc), doc.Data()["SunAltitude"].(float64), doc.Data()["PowerGen"].(float64))
+				fmt.Printf("potential bad daytime data [%s]: %s | %f | %f\n", doc.Ref.ID, doc.Data()["DateTime"].(time.Time).In(loc), doc.Data()["SunAltitude"].(float64), doc.Data()["PowerGen"].(float64))
 				typed := doc.Data()["dateNano"].(int64)
 				typedDate := time.Unix(0, int64(typed)).In(loc)
 				dateTimeToFix := typedDate
