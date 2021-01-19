@@ -30,4 +30,5 @@ jobs:
         name: solar3_github
         runtime: go113
         entry_point: Solar3 
+        env_vars: ${{ secret.ENV_VARS }} 
         credentials: ${{ secrets.GCP_CRED }}
