@@ -13,7 +13,7 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v2
       with:
-        go-version: 1.15
+        go-version: 1.20
 
     - id: Build
       name: Build
@@ -28,7 +28,7 @@ jobs:
       with:
         project_id: solar3-301918
         name: solar3_github
-        runtime: go113
+        runtime: go120
         entry_point: Solar3 
         env_vars: ${{ secrets.ENV_VARS }} 
         credentials: ${{ secrets.GCP_CRED }}
