@@ -21,13 +21,13 @@ func TootWithMedia(message string, media []byte) error {
 		return err
 	}
 
-	uploadRes, err := client.UploadMediaFromBytes(context.Background(), media)
-	if err != nil {
-		log.Fatal(fmt.Sprintf("MastoUploadMediaError: %v", err))
-		return err
-	}
+	// uploadRes, err := client.UploadMediaFromBytes(context.Background(), media)
+	// if err != nil {
+	//	 log.Fatal(fmt.Sprintf("MastoUploadMediaError: %v", err))
+	//	 return err
+	// }
 	var mediaIDs []mastodon.ID
-	mediaIDs[0] = uploadRes.ID
+	//mediaIDs[0] = uploadRes.ID
 	theToot := mastodon.Toot{
 		Status:   message,
 		MediaIDs: mediaIDs,
