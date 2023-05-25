@@ -4,9 +4,7 @@ go 1.20
 
 require (
 	cloud.google.com/go/firestore v1.6.1
-	github.com/dghubble/oauth1 v0.7.0
-	github.com/jasondborneman/go-twitter v0.0.0-20200721041336-9cdb03079f7c
-	github.com/mattn/go-mastodon v0.0.6
+	github.com/jasondborneman/go-mastodon v0.0.0-20230525224320-66bef0c5e1e6
 	github.com/wcharczuk/go-chart v2.0.1+incompatible
 	google.golang.org/api v0.62.0
 )
@@ -14,19 +12,16 @@ require (
 require (
 	cloud.google.com/go v0.99.0 // indirect
 	github.com/blend/go-sdk v1.20220411.3 // indirect
-	github.com/cenkalti/backoff v2.1.1+incompatible // indirect
 	github.com/census-instrumentation/opencensus-proto v0.2.1 // indirect
 	github.com/cespare/xxhash/v2 v2.1.1 // indirect
 	github.com/cncf/udpa/go v0.0.0-20210930031921-04548b0d99d4 // indirect
 	github.com/cncf/xds/go v0.0.0-20211011173535-cb28da3451f1 // indirect
-	github.com/dghubble/sling v1.3.0 // indirect
 	github.com/envoyproxy/go-control-plane v0.9.10-0.20210907150352-cf90f659a021 // indirect
 	github.com/envoyproxy/protoc-gen-validate v0.1.0 // indirect
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/go-cmp v0.5.6 // indirect
-	github.com/google/go-querystring v1.0.0 // indirect
 	github.com/googleapis/gax-go/v2 v2.1.1 // indirect
 	github.com/gorilla/websocket v1.5.0 // indirect
 	github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80 // indirect
