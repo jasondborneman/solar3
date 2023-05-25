@@ -10,14 +10,14 @@ import (
 )
 
 func TootWithMedia(message string, media []byte) error {
-	fmt.Println("Tooting with no media + un/pwd")
+	fmt.Println("Tooting with no media")
 	client := mastodon.NewClient(&mastodon.Config{
 		Server:       "https://botsin.space",
 		ClientID:     os.Getenv("MASTODON_CLIENTID"),
 		ClientSecret: os.Getenv("MASTODON_CLIENTSECRET"),
 	})
-	// err := client.AuthenticateApp(context.Background())
-	err := client.Authenticate(context.Background(), os.Getenv("MASTODON_USER"), os.Getenv("MASTODON_PASS"))
+	err := client.AuthenticateApp(context.Background())
+	// err := client.Authenticate(context.Background(), os.Getenv("MASTODON_USER"), os.Getenv("MASTODON_PASS"))
 	if err != nil {
 		log.Fatal(fmt.Sprintf("MastoAuthError: %v", err))
 		return err
