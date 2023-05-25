@@ -10,7 +10,7 @@ import (
 )
 
 func TootWithMedia(message string, media []byte) error {
-	fmt.Println("Tooting with no media")
+	fmt.Println("Tooting with no media + un/pwd")
 	client := mastodon.NewClient(&mastodon.Config{
 		Server:       "https://botsin.space",
 		ClientID:     os.Getenv("MASTODON_CLIENTID"),
