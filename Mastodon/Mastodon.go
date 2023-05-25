@@ -16,7 +16,8 @@ func TootWithMedia(message string, media []byte) error {
 		ClientID:     os.Getenv("MASTODON_CLIENTID"),
 		ClientSecret: os.Getenv("MASTODON_CLIENTSECRET"),
 	})
-	err := client.AuthenticateApp(context.Background())
+	// err := client.AuthenticateApp(context.Background())
+	err := client.Authenticate(context.Background(), os.Getenv("MASTODON_USER"), os.Getenv("MASTODON_PASS"))
 	if err != nil {
 		log.Fatal(fmt.Sprintf("MastoAuthError: %v", err))
 		return err
@@ -35,7 +36,7 @@ func TootWithMedia(message string, media []byte) error {
 	}
 	_, err = client.PostStatus(context.Background(), &theToot)
 	if err != nil {
-		log.Fatal(fmt.Sprintf("MastoUploadMediaError: %v", err))
+		log.Fatal(fmt.Sprintf("MastoTootError: %v", err))
 		return err
 	}
 	return nil
