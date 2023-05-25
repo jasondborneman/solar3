@@ -22,6 +22,11 @@ jobs:
     - id: Test
       name: Test
       run: go test
+
+    - id: 'auth'
+      uses: 'google-github-actions/auth@v1'
+      with:
+        credentials_json: ${{ secrets.GCP_CRED }}
     
     - id: Deploy
       uses: google-github-actions/deploy-cloud-functions@main
@@ -30,5 +35,4 @@ jobs:
         name: solar3_github
         runtime: go120
         entry_point: Solar3 
-        env_vars: ${{ secrets.ENV_VARS }} 
-        credentials: ${{ secrets.GCP_CRED }}
+        env_vars: ${{ secrets.ENV_VARS }}
