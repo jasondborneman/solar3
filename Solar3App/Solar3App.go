@@ -8,11 +8,11 @@ import (
 
 	g "github.com/jasondborneman/solar3/Graphing"
 	ipgl "github.com/jasondborneman/solar3/IPGeoLocation"
+	ma "github.com/jasondborneman/solar3/Mastodon"
 	ow "github.com/jasondborneman/solar3/OpenWeather"
 	s3data "github.com/jasondborneman/solar3/Solar3DataStorage"
 	sd "github.com/jasondborneman/solar3/SolarData"
 	se "github.com/jasondborneman/solar3/SolarEdge"
-	tw "github.com/jasondborneman/solar3/Twitter"
 )
 
 func GetData() sd.SolarData {
@@ -107,7 +107,7 @@ Sun Altitude: %.2f`
 			data.SunAltitude)
 		tweeted = false
 		if doTweet {
-			tweetErr := tw.TweetWithMedia(message, graphBytes)
+			tweetErr := ma.TootWithMedia(message, graphBytes)
 			tweeted = true
 			if tweetErr != nil {
 				tweeted = false
