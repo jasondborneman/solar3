@@ -27,9 +27,13 @@ func GetData() sd.SolarData {
 	var powerNow *sd.Power
 	var sunMoon *ipgl.SunMoonInfo
 	var openWeather *ow.OpenWeather
+	fmt.Println("GetSolarSiteInfo")
 	site, _ = se.GetSolarSiteInfo(siteID)
+	fmt.Println("GetLatestPowerData")
 	powerNow, _ = se.GetLatestPowerData(siteID)
+	fmt.Println("GetSunPosition")
 	sunMoon, _ = ipgl.GetSunPosition(latitude, longitude)
+	fmt.Println("GetWeather")
 	openWeather, _ = ow.GetWeather(latitude, longitude)
 	retVal.Site = site
 	retVal.DateTimeStored = now
@@ -73,13 +77,16 @@ func Run(doTweet bool, doSaveGraph bool, fixDodgyDataOnly bool) {
 	if !fixDodgyDataOnly {
 		var data sd.SolarData
 		data = GetData()
+		fmt.Println("SaveToFirestore")
 		xVals, powerYVals, sunAltVals, maxPower, errSave := s3data.SaveToFirestore(data)
 		saved = true
 		if errSave != nil {
 			saved = false
 		}
+		fmt.Println("CreateGraph")
 		graphBytes := g.CreateGraph(xVals, powerYVals, sunAltVals, maxPower)
 		if doSaveGraph {
+			fmt.Println("SaveGraph")
 			errSaveJpeg := g.SaveGraph(graphBytes, "chart")
 			pngSaved = true
 			if errSaveJpeg != nil {
@@ -107,6 +114,7 @@ Sun Altitude: %.2f`
 			data.SunAltitude)
 		tweeted = false
 		if doTweet {
+			fmt.Println("TootWithMedia")
 			tweetErr := ma.TootWithMedia(message, graphBytes)
 			tweeted = true
 			if tweetErr != nil {
@@ -114,6 +122,7 @@ Sun Altitude: %.2f`
 			}
 		}
 	}
+	fmt.Println("FixingDodgyData")
 	dodgyTimes := s3data.GetDodgyDataTimesPast24Hrs()
 	siteID, _ := strconv.Atoi(os.Getenv("SOLAREDGE_SITEID"))
 	fixedCount := 0
