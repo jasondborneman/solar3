@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	cloud.google.com/go/firestore v1.6.1
-	github.com/jasondborneman/go-mastodon v0.0.0-20230525230754-443e1888b05c
+	github.com/jasondborneman/go-mastodon v0.0.0-20230525233122-18ddffbfdd0f
 	github.com/wcharczuk/go-chart v2.0.1+incompatible
 	google.golang.org/api v0.62.0
 )

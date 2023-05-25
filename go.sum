@@ -176,6 +176,8 @@ github.com/jasondborneman/go-mastodon v0.0.0-20230525225823-e634074d22d5 h1:6xVy
 github.com/jasondborneman/go-mastodon v0.0.0-20230525225823-e634074d22d5/go.mod h1:htmpeIHia4dKrLo4Wj/hJOlnlbq28JqaTCWfjj/BQ00=
 github.com/jasondborneman/go-mastodon v0.0.0-20230525230754-443e1888b05c h1:LRG0tjOx7LFtnfnJ7bwsJQ52u91rvsyYxMaIjgM91W4=
 github.com/jasondborneman/go-mastodon v0.0.0-20230525230754-443e1888b05c/go.mod h1:htmpeIHia4dKrLo4Wj/hJOlnlbq28JqaTCWfjj/BQ00=
+github.com/jasondborneman/go-mastodon v0.0.0-20230525233122-18ddffbfdd0f h1:KGqb7iF7m3PlgjG05cu8nKez5mbxgJtipdeU1GmX7kE=
+github.com/jasondborneman/go-mastodon v0.0.0-20230525233122-18ddffbfdd0f/go.mod h1:htmpeIHia4dKrLo4Wj/hJOlnlbq28JqaTCWfjj/BQ00=
 github.com/jstemmer/go-junit-report v0.0.0-20190106144839-af01ea7f8024/go.mod h1:6v2b51hI/fHJwM22ozAgKL4VKDeJcHhJFhtBdhmNjmU=
 github.com/jstemmer/go-junit-report v0.9.1/go.mod h1:Brl9GWCQeLvo8nXZwPNNblvFj/XSXhF0NWZEnDohbsk=
 github.com/kisielk/gotool v1.0.0/go.mod h1:XhKaO+MFFWcvkIS/tQcRk01m1F5IRFswLeQ+oQHNcck=
