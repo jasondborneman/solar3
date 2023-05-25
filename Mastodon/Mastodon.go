@@ -14,10 +14,8 @@ func TootWithMedia(message string, media []byte) error {
 		Server:       "https://botsin.space",
 		ClientID:     os.Getenv("MASTODON_CLIENTID"),
 		ClientSecret: os.Getenv("MASTODON_CLIENTSECRET"),
-		AccessToken:  os.Getenv("MASTODON_TOKEN"),
 	})
-
-	err := client.AuthenticateToken(context.Background(), os.Getenv("MASTODON_TOKEN"), "urn:ietf:wg:oauth:2.0:oob")
+	err := client.Authenticate(context.Background(), os.Getenv("MASTODON_USER"), os.Getenv("MASTODON_PWD"))
 	if err != nil {
 		log.Fatal(fmt.Sprintf("MastoAuthError: %v", err))
 		return err
