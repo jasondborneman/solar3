@@ -18,22 +18,21 @@ func TootWithMedia(message string, media []byte) error {
 		AccessToken:  os.Getenv("MASTODON_TOKEN"),
 	})
 	err := client.AuthenticateApp(context.Background(), "write")
-	// err := client.Authenticate(context.Background(), os.Getenv("MASTODON_USER"), os.Getenv("MASTODON_PASS"))
 	if err != nil {
 		log.Fatalf("MastoAuthError: %v", err)
 		return err
 	}
 
-	// uploadRes, err := client.UploadMediaFromBytes(context.Background(), media)
-	// if err != nil {
-	//	 log.Fatal(fmt.Sprintf("MastoUploadMediaError: %v", err))
-	//	 return err
-	// }
-	// var mediaIDs []mastodon.ID
-	//mediaIDs[0] = uploadRes.ID
+	uploadRes, err := client.UploadMediaFromBytes(context.Background(), media)
+	if err != nil {
+		log.Fatal(fmt.Sprintf("MastoUploadMediaError: %v", err))
+		return err
+	}
+	var mediaIDs []mastodon.ID
+	mediaIDs[0] = uploadRes.ID
 	theToot := mastodon.Toot{
-		Status: message,
-		// MediaIDs: mediaIDs,
+		Status:   message,
+		MediaIDs: mediaIDs,
 	}
 	_, err = client.PostStatus(context.Background(), &theToot)
 	if err != nil {
