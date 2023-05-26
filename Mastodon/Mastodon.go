@@ -24,7 +24,7 @@ func TootWithMedia(message string, media []byte) error {
 		return err
 	}
 	var mediaIDs []mastodon.ID
-	mediaIDs[0] = uploadRes.ID
+	mediaIDs = append(mediaIDs, uploadRes.ID)
 	theToot := mastodon.Toot{
 		Status:   message,
 		MediaIDs: mediaIDs,
