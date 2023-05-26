@@ -21,9 +21,9 @@ func Solar3(w http.ResponseWriter, r *http.Request) {
 
 	stupidAuthLocal := os.Getenv("STUPID_AUTH")
 	if d.StupidAuth == stupidAuthLocal {
-		doTweet := os.Getenv("DO_TWEET") == "true"
+		doToot := os.Getenv("DO_TOOT") == "true"
 		doSaveGraph := os.Getenv("DO_SAVEGRAPH") == "true"
-		s3.Run(doTweet, doSaveGraph, false)
+		s3.Run(doToot, doSaveGraph, false)
 		fmt.Fprint(w, "Success")
 	} else {
 		w.WriteHeader(http.StatusUnauthorized)

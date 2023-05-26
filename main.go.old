@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	doTweet := os.Getenv("DO_TWEET") == "true"
+	doToot := os.Getenv("DO_TOOT") == "true"
 	doSaveGraph := os.Getenv("DO_SAVEGRAPH") == "true"
-	s3.Run(doTweet, doSaveGraph, true)
+	s3.Run(doToot, doSaveGraph, true)
 }

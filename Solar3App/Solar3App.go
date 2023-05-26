@@ -68,11 +68,11 @@ func GetData() sd.SolarData {
 	return retVal
 }
 
-func Run(doTweet bool, doSaveGraph bool, fixDodgyDataOnly bool) {
+func Run(doToot bool, doSaveGraph bool, fixDodgyDataOnly bool) {
 	loc, _ := time.LoadLocation("America/Indiana/Indianapolis")
 	saved := false
 	pngSaved := false
-	tweeted := false
+	tooted := false
 	message := ""
 	if !fixDodgyDataOnly {
 		var data sd.SolarData
@@ -112,13 +112,13 @@ Sun Altitude: %.2f`
 			data.CloudCover,
 			data.SunAzimuth,
 			data.SunAltitude)
-		tweeted = false
-		if doTweet {
+		tooted = false
+		if doToot {
 			fmt.Println("TootWithMedia")
-			tweetErr := ma.TootWithMedia(message, graphBytes)
-			tweeted = true
-			if tweetErr != nil {
-				tweeted = false
+			tootErr := ma.TootWithMedia(message, graphBytes)
+			tooted = true
+			if tootErr != nil {
+				tooted = false
 			}
 		}
 	}
@@ -146,7 +146,7 @@ Sun Altitude: %.2f`
 	if !fixDodgyDataOnly {
 		fmt.Printf("Saved To Firestore?: %t\n", saved)
 		fmt.Printf("Saved Graph?:        %t\n", pngSaved)
-		fmt.Printf("Tweeted?:            %t\n", tweeted)
+		fmt.Printf("Tooted?:            %t\n", tooted)
 		fmt.Println(message)
 	}
 	fmt.Printf("Dodgy Data Count:    %d\n", len(dodgyTimes))

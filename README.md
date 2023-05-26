@@ -1,7 +1,7 @@
 ![Go](https://github.com/jasondborneman/solar3/workflows/Go/badge.svg?branch=main)
 
 # solar3
-Newest version of code that combines various APIs to gather data about my home solar array behind a SolarEdge inverter. Tweets a subset of the data along with a graph of Power Generated and Sun Altitude every 15 minutes. Runs as a GCP Cloud Function Data gathered includes:
+Newest version of code that combines various APIs to gather data about my home solar array behind a SolarEdge inverter. Toots a subset of the data along with a graph of Power Generated and Sun Altitude every 15 minutes. Runs as a GCP Cloud Function Data gathered includes:
 
 * Power Generated: in 15 minute chunks
 * DateTime: the time of the SolarEdge power reading
@@ -17,7 +17,7 @@ Newest version of code that combines various APIs to gather data about my home s
 * SunAzimuth: As determiend by Lat/Long via the IPGeolocation API
 
 ## APIs Used
-* Twitter: https://github.com/jasondborneman/go-twitter (a fork of https://github.com/drswork/go-twitter, in turn a fork of https://github.com/dghubble/go-twitter. Forks include some handling for posting media to tweets)
+* Mastodon: https://github.com/mattn/go-mastodon
 * SolarEdge API: https://www.solaredge.com/sites/default/files//se_monitoring_api.pdf
 * OpenWeather API: https://openweathermap.org/current
 * IPGeolocation Astronomy API: https://ipgeolocation.io/documentation/astronomy-api.html
@@ -30,14 +30,13 @@ Newest version of code that combines various APIs to gather data about my home s
 * SOLAR3_LONGITUDE : Longitude of your solar array
 * OPENWEATHER_APIKEY : API Key for OpenWeather
 * GCP_PROJECT : The name of your GCP Project
-* TWITTER_CONSUMERKEY : Twitter Consumer Key
-* TWITTER_CONSUMERSECRET : Twitter Consumer Secret
-* TWITTER_ACCESSTOKEN : Twitter Access Token
-* TWITTER_ACCESSSECRET : Twitter Access Secret
+* MASTODON_CLIENTID : Mastodon Client ID
+* MASTODON_CLIENTSECRET : Mastodon Client Secret
+* MASTODON_TOKEN : Mastodon Token
 * STUPID_AUTH : Make up your own GUID or any string really.
 
 ### Optional Environment Variables
-* DO_TWEET : [true|false] to turn on and off tweeting. Defaults to false
+* DO_TOOT : [true|false] to turn on and off tooting. Defaults to false
 * DO_SAVEGRAPH : [true|false] to turn on and off saving a local copy of the graph
 
 ## Auth
@@ -78,12 +77,10 @@ it is recommended, if you're going to use the GitHub Action to deploy, to set up
 
 ## Running locally
 
-Rename function.go -> function.go.old
-Rename main.go.old -> main.go
-```
-$ go build .
-$ ./solar3
-```
+~~Rename function.go -> function.go.old
+Rename main.go.old -> main.go~~
+
+Running locally doesn't currently work due to the Firebase dependency. Need to figure that out, how to mock that or use a local firestore mock or something.
 
 ## Future Ideas:
 * Fix the graph to show the secondary Y axis for Sun Altitude.
