@@ -32,6 +32,7 @@ func UpdatePowerDataAt(powerReading *sd.PowerReading) error {
 	doc, getMatchErr := fixIter.Next()
 	if getMatchErr != nil {
 		fmt.Printf("Error getting document to update: %s", getMatchErr)
+		return getMatchErr
 	}
 	fmt.Printf("Updating doc [%s] with value %f\n", doc.Ref.ID, value)
 	doc.Ref.Update(ctx, []firestore.Update{
