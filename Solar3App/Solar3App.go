@@ -114,11 +114,15 @@ Sun Altitude: %.2f`
 			data.SunAltitude)
 		tooted = false
 		if doToot {
-			fmt.Println("TootWithMedia")
-			tootErr := ma.TootWithMedia(message, graphBytes)
-			tooted = true
-			if tootErr != nil {
-				tooted = false
+			if data.SunAltitude > 0 {
+				fmt.Println("TootWithMedia")
+				tootErr := ma.TootWithMedia(message, graphBytes)
+				tooted = true
+				if tootErr != nil {
+					tooted = false
+				}
+			} else {
+				fmt.Printf("It's night, no point Tooting!")
 			}
 		}
 	}
