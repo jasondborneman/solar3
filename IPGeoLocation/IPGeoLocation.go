@@ -12,8 +12,8 @@ import (
 
 type SunMoonInfo struct {
 	Location struct {
-		Latitude  float64 `json:"latitude"`
-		Longitude float64 `json:"longitude"`
+		Latitude  string `json:"latitude"`
+		Longitude string `json:"longitude"`
 	} `json:"location"`
 	Date                 string  `json:"date"`
 	CurrentTime          string  `json:"current_time"`
