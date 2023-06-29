@@ -58,6 +58,7 @@ func GetData() sd.SolarData {
 			break
 		}
 	}
+	fmt.Println("GetAQI")
 	aqiData, _ = aq.GetAQI(latitude, longitude)
 	retVal.CloudCover = openWeather.Clouds.All
 	retVal.Temp = openWeather.Main.Temp
@@ -121,8 +122,9 @@ func Run(doToot bool, doSaveGraph bool, fixDodgyDataOnly bool) {
 DateTime: %s
 Last Reported Power: %.2f
 Cloud Cover: %d
-Sun Azimuth: %.2f
-Sun Altitude: %.2f`
+Sun Altitude: %.2f
+AQI (PM2.5): %d
+AQI (PM10): %d`
 		generatedDate := data.PowerGen.Date.In(loc)
 		message = fmt.Sprintf(
 			message,
@@ -135,7 +137,9 @@ Sun Altitude: %.2f`
 			data.PowerGen.Value,
 			data.CloudCover,
 			data.SunAzimuth,
-			data.SunAltitude)
+			data.SunAltitude,
+			data.PM2_5AQI,
+			data.PM10AQI)
 		tooted = false
 		if doToot {
 			if data.SunAltitude > 0 {
