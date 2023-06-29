@@ -18,6 +18,8 @@ type SolarData struct {
 	SnowOneHr      float64
 	RainOneHr      float64
 	WeatherID      int
+	PM2_5AQI       int
+	PM10AQI        int
 }
 
 type Site struct {

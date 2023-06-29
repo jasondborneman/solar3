@@ -12,7 +12,7 @@ import (
 	"github.com/wcharczuk/go-chart"
 )
 
-func CreateGraph(xVals []float64, powerYVals []float64, sunAltVals []float64, maxPower float64) []byte {
+func CreateGraph(xVals, powerYVals, yVals []float64, maxPower float64, yName string) []byte {
 	graph := chart.Chart{
 		XAxis: chart.XAxis{
 			Style: chart.Style{
@@ -41,10 +41,10 @@ func CreateGraph(xVals []float64, powerYVals []float64, sunAltVals []float64, ma
 				YValues: powerYVals,
 			},
 			chart.ContinuousSeries{
-				Name:    "Sun Altitude",
+				Name:    yName,
 				YAxis:   chart.YAxisSecondary,
 				XValues: xVals,
-				YValues: sunAltVals,
+				YValues: yVals,
 			},
 		},
 	}

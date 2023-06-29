@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"time"
 
+	aq "github.com/jasondborneman/solar3/AirNow"
 	g "github.com/jasondborneman/solar3/Graphing"
 	ipgl "github.com/jasondborneman/solar3/IPGeoLocation"
 	ma "github.com/jasondborneman/solar3/Mastodon"
@@ -27,6 +28,7 @@ func GetData() sd.SolarData {
 	var powerNow *sd.Power
 	var sunMoon *ipgl.SunMoonInfo
 	var openWeather *ow.OpenWeather
+	var aqiData *aq.AQIData
 	fmt.Println("GetSolarSiteInfo")
 	site, _ = se.GetSolarSiteInfo(siteID)
 	fmt.Println("GetLatestPowerData")
@@ -56,6 +58,7 @@ func GetData() sd.SolarData {
 			break
 		}
 	}
+	aqiData, _ = aq.GetAQI(latitude, longitude)
 	retVal.CloudCover = openWeather.Clouds.All
 	retVal.Temp = openWeather.Main.Temp
 	retVal.Pressure = openWeather.Main.Pressure
@@ -65,6 +68,8 @@ func GetData() sd.SolarData {
 	retVal.SnowOneHr = openWeather.Snow.OneH
 	retVal.RainOneHr = openWeather.Rain.OneH
 	retVal.WeatherID = openWeather.Weather[0].ID
+	retVal.PM2_5AQI = aqiData.PM2_5AQI
+	retVal.PM10AQI = aqiData.PM10AQI
 	return retVal
 }
 
@@ -78,21 +83,40 @@ func Run(doToot bool, doSaveGraph bool, fixDodgyDataOnly bool) {
 		var data sd.SolarData
 		data = GetData()
 		fmt.Println("SaveToFirestore")
-		xVals, powerYVals, sunAltVals, maxPower, errSave := s3data.SaveToFirestore(data)
+		xVals, powerYVals, sunAltVals, pm2_5Vals, pm10Vals, maxPower, errSave := s3data.SaveToFirestore(data)
 		saved = true
 		if errSave != nil {
 			saved = false
 		}
 		fmt.Println("CreateGraph")
-		graphBytes := g.CreateGraph(xVals, powerYVals, sunAltVals, maxPower)
+		graphBytesSunAlt := g.CreateGraph(xVals, powerYVals, sunAltVals, maxPower, "Sun Altitude")
 		if doSaveGraph {
-			fmt.Println("SaveGraph")
-			errSaveJpeg := g.SaveGraph(graphBytes, "chart")
+			fmt.Println("SaveGraph (Sun Altitude)")
+			errSaveJpeg := g.SaveGraph(graphBytesSunAlt, "chartSunAlt")
 			pngSaved = true
 			if errSaveJpeg != nil {
 				pngSaved = false
 			}
 		}
+		graphBytesPM2_5 := g.CreateGraph(xVals, powerYVals, pm2_5Vals, maxPower, "AQI (PM2.5)")
+		if doSaveGraph {
+			fmt.Println("SaveGraph (PM2.5)")
+			errSaveJpeg := g.SaveGraph(graphBytesSunAlt, "chartSunPM2_5")
+			pngSaved = true
+			if errSaveJpeg != nil {
+				pngSaved = false
+			}
+		}
+		graphBytesPM10 := g.CreateGraph(xVals, powerYVals, pm10Vals, maxPower, "AQI (PM10)")
+		if doSaveGraph {
+			fmt.Println("SaveGraph (PM2.5)")
+			errSaveJpeg := g.SaveGraph(graphBytesSunAlt, "chartSunPM210")
+			pngSaved = true
+			if errSaveJpeg != nil {
+				pngSaved = false
+			}
+		}
+		images := [][]byte{graphBytesSunAlt, graphBytesPM2_5, graphBytesPM10}
 		message = `
 DateTime: %s
 Last Reported Power: %.2f
@@ -116,7 +140,7 @@ Sun Altitude: %.2f`
 		if doToot {
 			if data.SunAltitude > 0 {
 				fmt.Println("TootWithMedia")
-				tootErr := ma.TootWithMedia(message, graphBytes)
+				tootErr := ma.TootWithMedia(message, images)
 				tooted = true
 				if tootErr != nil {
 					tooted = false

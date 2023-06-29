@@ -76,7 +76,7 @@ func GetDodgyDataTimesPast24Hrs() []time.Time {
 	return retVal
 }
 
-func SaveToFirestore(data sd.SolarData) ([]float64, []float64, []float64, float64, error) {
+func SaveToFirestore(data sd.SolarData) ([]float64, []float64, []float64, []float64, []float64, float64, error) {
 	ctx := context.Background()
 	dataClient := createClient(ctx)
 	_, _, fbErr := dataClient.Collection("solar3").Add(ctx, map[string]interface{}{
@@ -94,11 +94,13 @@ func SaveToFirestore(data sd.SolarData) ([]float64, []float64, []float64, float6
 		"SnowPastHour":   data.SnowOneHr,
 		"RainPastHour":   data.RainOneHr,
 		"WeatherID":      data.WeatherID,
+		"PM2_5":          data.PM2_5AQI,
+		"PM10":           data.PM10AQI,
 	})
 	if fbErr != nil {
 		fbErrMessage := fmt.Sprintf("Failed adding solar data to database: %v", fbErr)
 		fmt.Println(fbErrMessage)
-		return nil, nil, nil, 0, fbErr
+		return nil, nil, nil, nil, nil, 0, fbErr
 	}
 
 	iterMax := dataClient.Collection("solar3").OrderBy("PowerGen", firestore.Desc).StartAfter(time.Now().AddDate(0, -1, 0).UnixNano()).Limit(1).Documents(ctx)
@@ -106,13 +108,15 @@ func SaveToFirestore(data sd.SolarData) ([]float64, []float64, []float64, float6
 	if maxPowerErr != nil {
 		mpErrMessage := fmt.Sprintf("Failed to get max power production: %s", maxPowerErr)
 		fmt.Println(mpErrMessage)
-		return nil, nil, nil, 0, maxPowerErr
+		return nil, nil, nil, nil, nil, 0, maxPowerErr
 	}
 	maxPower := doc.Data()["PowerGen"].(float64)
 
 	xVals := []float64{}
 	powerYVals := []float64{}
 	sunAltVals := []float64{}
+	pm2_5AQIVals := []float64{}
+	pm10AQIVals := []float64{}
 	iter := dataClient.Collection("solar3").OrderBy("dateNano", firestore.Asc).StartAfter(time.Now().AddDate(0, -1, 0).UnixNano()).Documents(ctx)
 	for {
 		doc, fbReadErr := iter.Next()
@@ -127,9 +131,11 @@ func SaveToFirestore(data sd.SolarData) ([]float64, []float64, []float64, float6
 			xVals = append(xVals, float64(doc.Data()["dateNano"].(int64)))
 			powerYVals = append(powerYVals, float64(doc.Data()["PowerGen"].(float64)))
 			sunAltVals = append(sunAltVals, float64(doc.Data()["SunAltitude"].(float64)))
+			pm2_5AQIVals = append(pm2_5AQIVals, float64(doc.Data()["PM2_5"].(float64)))
+			pm10AQIVals = append(pm10AQIVals, float64(doc.Data()["PM10"].(float64)))
 		}
 	}
 
 	dataClient.Close()
-	return xVals, powerYVals, sunAltVals, maxPower, nil
+	return xVals, powerYVals, sunAltVals, pm2_5AQIVals, pm10AQIVals, maxPower, nil
 }

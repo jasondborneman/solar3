@@ -9,7 +9,7 @@ import (
 	"github.com/jasondborneman/go-mastodon"
 )
 
-func TootWithMedia(message string, media []byte) error {
+func TootWithMedia(message string, media [][]byte) error {
 	fmt.Println("Tooting with no media")
 	client := mastodon.NewClient(&mastodon.Config{
 		Server:       "https://botsin.space",
@@ -18,18 +18,20 @@ func TootWithMedia(message string, media []byte) error {
 		AccessToken:  os.Getenv("MASTODON_TOKEN"),
 	})
 
-	uploadRes, err := client.UploadMediaFromBytes(context.Background(), media)
-	if err != nil {
-		log.Fatalf("MastoUploadMediaError: %v", err)
-		return err
-	}
 	var mediaIDs []mastodon.ID
-	mediaIDs = append(mediaIDs, uploadRes.ID)
+	for _, mediaBytes := range media {
+		uploadRes, err := client.UploadMediaFromBytes(context.Background(), mediaBytes)
+		if err != nil {
+			log.Fatalf("MastoUploadMediaError: %v", err)
+			return err
+		}
+		mediaIDs = append(mediaIDs, uploadRes.ID)
+	}
 	theToot := mastodon.Toot{
 		Status:   message,
 		MediaIDs: mediaIDs,
 	}
-	_, err = client.PostStatus(context.Background(), &theToot)
+	_, err := client.PostStatus(context.Background(), &theToot)
 	if err != nil {
 		log.Fatalf("MastoTootError: %v", err)
 		return err
