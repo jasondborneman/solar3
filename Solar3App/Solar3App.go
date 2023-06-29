@@ -123,8 +123,8 @@ DateTime: %s
 Last Reported Power: %.2f
 Cloud Cover: %d
 Sun Altitude: %.2f
-AQI (PM2.5): %d
-AQI (PM10): %d`
+AQI (PM2.5): %v
+AQI (PM10): %v`
 		generatedDate := data.PowerGen.Date.In(loc)
 		message = fmt.Sprintf(
 			message,
@@ -136,7 +136,6 @@ AQI (PM10): %d`
 				generatedDate.Minute()),
 			data.PowerGen.Value,
 			data.CloudCover,
-			data.SunAzimuth,
 			data.SunAltitude,
 			data.PM2_5AQI,
 			data.PM10AQI)
