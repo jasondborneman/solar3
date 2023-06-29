@@ -134,12 +134,12 @@ func SaveToFirestore(data sd.SolarData) ([]float64, []float64, []float64, []floa
 			if doc.Data()["PM2_5"] == nil {
 				pm2_5AQIVals = append(pm2_5AQIVals, 0)
 			} else {
-				pm2_5AQIVals = append(pm2_5AQIVals, float64(doc.Data()["PM2_5"].(int)))
+				pm2_5AQIVals = append(pm2_5AQIVals, float64(doc.Data()["PM2_5"].(int64)))
 			}
 			if doc.Data()["PM10"] == nil {
 				pm10AQIVals = append(pm10AQIVals, 0)
 			} else {
-				pm10AQIVals = append(pm10AQIVals, float64(doc.Data()["PM10"].(int)))
+				pm10AQIVals = append(pm10AQIVals, float64(doc.Data()["PM10"].(int64)))
 			}
 		}
 	}
