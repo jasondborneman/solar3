@@ -41,7 +41,7 @@ func callIPGeoLocation(url string) (*http.Response, error) {
 
 	resp, getErr := netClient.Get(url)
 	if getErr != nil {
-		log.Fatal(fmt.Sprintf("Error getting calling IPGeoLocation API: %s", getErr))
+		log.Fatalf("Error getting calling IPGeoLocation API: %s", getErr)
 		return nil, getErr
 
 	}
@@ -59,13 +59,13 @@ func GetSunPosition(latitude string, longitude string) (*SunMoonInfo, error) {
 
 	resp, callErr := callIPGeoLocation(url)
 	if callErr != nil {
-		log.Fatal(fmt.Sprintf("Error loading response for sun position: %s", callErr))
+		log.Fatalf("Error loading response for sun position: %s", callErr)
 		return nil, callErr
 	}
 	sunMoonInfo := &SunMoonInfo{}
 	decodeErr := json.NewDecoder(resp.Body).Decode(&sunMoonInfo)
 	if decodeErr != nil {
-		log.Fatal(fmt.Sprintf("Error decoding sun position response: %s", decodeErr))
+		log.Fatalf("Error decoding sun position response: %s", decodeErr)
 		return nil, decodeErr
 	}
 	return sunMoonInfo, nil
