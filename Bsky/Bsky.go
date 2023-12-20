@@ -81,7 +81,6 @@ func PostWithMedia(message string, media [][]byte) error {
 		return decodeErr
 	}
 
-	url = fmt.Sprintf("%s/xrpc/com.atproto.repo.uploadBlob", bskyUri)
 	bskyMediaPost := &BskyMediaPost{}
 	bskyMediaPost.Type = "app.bsky.feed.post"
 	bskyMediaPost.Text = message
@@ -89,7 +88,7 @@ func PostWithMedia(message string, media [][]byte) error {
 	bskyMediaPost.Embed.Type = "app.bsky.embed.image"
 	bskyMediaPost.Embed.Images = []BskyImageWithAlt{}
 	for _, mediaBytes := range media {
-
+		url = fmt.Sprintf("%s/xrpc/com.atproto.repo.uploadBlob", bskyUri)
 		uploadImgReq, uploadImgErr := http.NewRequest("POST", url, bytes.NewReader(mediaBytes))
 		if uploadImgErr != nil {
 			log.Fatalf("Error creating Bsky Image Upload request: %s", uploadImgErr)
@@ -119,6 +118,7 @@ func PostWithMedia(message string, media [][]byte) error {
 		log.Fatalf("Error encoding Bsky Media Post: %s", encodeErr)
 		return encodeErr
 	}
+	url = fmt.Sprintf("%s/xrpc/com.atproto.repo.createRecord", bskyUri)
 	postReq, postErr := http.NewRequest("POST", url, &buf)
 	if postErr != nil {
 		log.Fatalf("Error creating Bsky Media Post request: %s", postErr)
@@ -132,7 +132,7 @@ func PostWithMedia(message string, media [][]byte) error {
 		return postErr
 	}
 	if postResp.StatusCode != 200 {
-		message := fmt.Sprintf("Non-200 Status Code Returned: %d [%s]", postResp.StatusCode, url)
+		message := fmt.Sprintf("Non-200 Status Code Returned making post: %d [%s]", postResp.StatusCode, url)
 		log.Fatal(message)
 		return errors.New(message)
 	}
