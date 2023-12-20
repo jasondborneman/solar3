@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -132,7 +133,13 @@ func PostWithMedia(message string, media [][]byte) error {
 		return postErr
 	}
 	if postResp.StatusCode != 200 {
-		message := fmt.Sprintf("Non-200 Status Code Returned making post: %d [%s]", postResp.StatusCode, url)
+		b, err := io.ReadAll(postResp.Body)
+		if err != nil {
+			log.Fatalf("Error reading Bsky Media Post response: %s", err)
+			return err
+		}
+
+		message := fmt.Sprintf("Non-200 Status Code Returned making post: %d [%s] [%s]", postResp.StatusCode, url, string(b))
 		log.Fatal(message)
 		return errors.New(message)
 	}
