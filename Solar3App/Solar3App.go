@@ -7,9 +7,9 @@ import (
 	"time"
 
 	aq "github.com/jasondborneman/solar3/AirNow"
+	bsky "github.com/jasondborneman/solar3/Bsky"
 	g "github.com/jasondborneman/solar3/Graphing"
 	ipgl "github.com/jasondborneman/solar3/IPGeoLocation"
-	ma "github.com/jasondborneman/solar3/Mastodon"
 	ow "github.com/jasondborneman/solar3/OpenWeather"
 	s3data "github.com/jasondborneman/solar3/Solar3DataStorage"
 	sd "github.com/jasondborneman/solar3/SolarData"
@@ -143,7 +143,7 @@ AQI (PM10): %v`
 		if doToot {
 			if data.SunAltitude > 0 {
 				fmt.Println("TootWithMedia")
-				tootErr := ma.TootWithMedia(message, images)
+				tootErr := bsky.PostWithMedia(message, images)
 				tooted = true
 				if tootErr != nil {
 					tooted = false
