@@ -62,16 +62,19 @@ func PostWithMedia(message string, media [][]byte) error {
 	url := fmt.Sprintf("%s/xrpc/com.atproto.server.createSession", bskyUri)
 	resp, authErr := bskyClient.Post(url, "application/json", &authBuf)
 	respBody, err := io.ReadAll(resp.Body)
+	if respBody != nil {
+		log.Printf("Bsky Auth response: %s", string(respBody))
+	}
 	if err != nil {
 		log.Fatalf("Error reading Bsky Auth response: %s", err)
 		return err
 	}
 	if authErr != nil {
-		log.Fatalf("Error authenticating to Bsky: %s [%v]", authErr, respBody)
+		log.Fatalf("Error authenticating to Bsky: %s", authErr)
 		return authErr
 	}
 	if resp.StatusCode != 200 {
-		message := fmt.Sprintf("Non-200 Status Code Returned: %d [%s] [%v]", resp.StatusCode, url, respBody)
+		message := fmt.Sprintf("Non-200 Status Code Returned: %d [%s]", resp.StatusCode, url)
 		log.Fatal(message)
 		return errors.New(message)
 	}
