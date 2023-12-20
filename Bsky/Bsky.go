@@ -61,13 +61,13 @@ func PostWithMedia(message string, media [][]byte) error {
 	}
 	url := fmt.Sprintf("%s/xrpc/com.atproto.server.createSession", bskyUri)
 	resp, authErr := bskyClient.Post(url, "application/json", &authBuf)
-	respBody, err := io.ReadAll(resp.Body)
-	if respBody != nil {
+	if resp.Body != nil {
+		respBody, err := io.ReadAll(resp.Body)
+		if err != nil {
+			log.Fatalf("Error reading Bsky Auth response: %s", err)
+			return err
+		}
 		log.Printf("Bsky Auth response: %s", string(respBody))
-	}
-	if err != nil {
-		log.Fatalf("Error reading Bsky Auth response: %s", err)
-		return err
 	}
 	if authErr != nil {
 		log.Fatalf("Error authenticating to Bsky: %s", authErr)
