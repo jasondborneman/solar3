@@ -89,8 +89,10 @@ func PostWithMedia(message string, media [][]byte) error {
 	bskyMediaPost.Embed.Type = "app.bsky.embed.image"
 	bskyMediaPost.Embed.Images = []BskyImageWithAlt{}
 	for i, mediaBytes := range media {
+		dataField := []byte("data=")
+		mediaBytes2 := append(dataField, mediaBytes...)
 		url = fmt.Sprintf("%s/xrpc/com.atproto.repo.uploadBlob", bskyUri)
-		uploadImgReq, uploadImgErr := http.NewRequest("POST", url, bytes.NewReader(mediaBytes))
+		uploadImgReq, uploadImgErr := http.NewRequest("POST", url, bytes.NewReader(mediaBytes2))
 		if uploadImgErr != nil {
 			log.Fatalf("Error creating Bsky Image Upload request: %s", uploadImgErr)
 			return uploadImgErr
