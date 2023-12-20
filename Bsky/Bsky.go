@@ -117,10 +117,6 @@ func PostWithMedia(message string, media [][]byte) error {
 			return uploadImgErr
 		}
 		bskyBlob := &BskyImageUploadResp{}
-		var tempBuf bytes.Buffer
-		tee := io.TeeReader(uploadImgResp.Body, &tempBuf)
-		str, _ := io.ReadAll(tee)
-		log.Printf("TEEEEEEEE: %s", str)
 		decodeErr := json.NewDecoder(uploadImgResp.Body).Decode(bskyBlob)
 		if decodeErr != nil {
 			log.Fatalf("Error decoding Bsky Blob response: %s", decodeErr)
