@@ -134,6 +134,7 @@ func PostWithMedia(message string, media [][]byte) error {
 		bskyMediaPost.Embed.Images[i].Image.MimeType = bskyBlob.Blob.MimeType
 		bskyMediaPost.Embed.Images[i].Image.Size = bskyBlob.Blob.Size
 		bskyMediaPost.Embed.Images[i].Image.Ref.Link = bskyBlob.Blob.Ref.Link
+		bskyMediaPost.Embed.Images[i].Image.Type = "blob"
 
 	}
 
