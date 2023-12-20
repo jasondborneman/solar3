@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
 	"os"
@@ -15,8 +14,7 @@ import (
 var bskyUri = "https://bsky.social"
 
 type BskyAuth struct {
-	accessJwt  string
-	refreshJwt string
+	AccessJwt string `json:"accessJwt"`
 }
 
 type BskyAuthPost struct {
@@ -61,14 +59,6 @@ func PostWithMedia(message string, media [][]byte) error {
 	}
 	url := fmt.Sprintf("%s/xrpc/com.atproto.server.createSession", bskyUri)
 	resp, authErr := bskyClient.Post(url, "application/json", &authBuf)
-	if resp.Body != nil {
-		respBody, err := io.ReadAll(resp.Body)
-		if err != nil {
-			log.Fatalf("Error reading Bsky Auth response: %s", err)
-			return err
-		}
-		log.Printf("Bsky Auth response: %s", string(respBody))
-	}
 	if authErr != nil {
 		log.Fatalf("Error authenticating to Bsky: %s", authErr)
 		return authErr
@@ -80,7 +70,7 @@ func PostWithMedia(message string, media [][]byte) error {
 	}
 	defer resp.Body.Close()
 	bskyAuth := &BskyAuth{}
-	decodeErr := json.NewDecoder(resp.Body).Decode(bskyAuth)
+	decodeErr := json.NewDecoder(resp.Body).Decode(&bskyAuth)
 	if decodeErr != nil {
 		log.Fatalf("Error decoding Bsky Auth response: %s", decodeErr)
 		return decodeErr
@@ -97,7 +87,7 @@ func PostWithMedia(message string, media [][]byte) error {
 
 		uploadImgReq, uploadImgErr := http.NewRequest("POST", url, bytes.NewReader(mediaBytes))
 		uploadImgReq.Header.Set("Content-Type", "image/png")
-		uploadImgReq.Header.Set("Authorization", fmt.Sprintf("Bearer %s", bskyAuth.accessJwt))
+		uploadImgReq.Header.Set("Authorization", fmt.Sprintf("Bearer %s", bskyAuth.AccessJwt))
 		uploadImgResp, uploadImgErr := bskyClient.Do(uploadImgReq)
 		if uploadImgErr != nil {
 			log.Fatalf("Error uploading image to Bsky: %s", uploadImgErr)
@@ -126,7 +116,7 @@ func PostWithMedia(message string, media [][]byte) error {
 		return postErr
 	}
 	postReq.Header.Set("Content-Type", "application/json")
-	postReq.Header.Set("Authorization", fmt.Sprintf("Bearer %s", bskyAuth.accessJwt))
+	postReq.Header.Set("Authorization", fmt.Sprintf("Bearer %s", bskyAuth.AccessJwt))
 	postResp, postErr := bskyClient.Do(postReq)
 	if postErr != nil {
 		log.Fatalf("Error posting Bsky Media Post: %s", postErr)
