@@ -88,7 +88,7 @@ func PostWithMedia(message string, media [][]byte) error {
 	bskyMediaPost.CreatedAt = time.Now()
 	bskyMediaPost.Embed.Type = "app.bsky.embed.image"
 	bskyMediaPost.Embed.Images = []BskyImageWithAlt{}
-	for _, mediaBytes := range media {
+	for i, mediaBytes := range media {
 		url = fmt.Sprintf("%s/xrpc/com.atproto.repo.uploadBlob", bskyUri)
 		uploadImgReq, uploadImgErr := http.NewRequest("POST", url, bytes.NewReader(mediaBytes))
 		if uploadImgErr != nil {
@@ -109,9 +109,18 @@ func PostWithMedia(message string, media [][]byte) error {
 			return decodeErr
 		}
 		bskyMediaPost.Embed.Images = append(bskyMediaPost.Embed.Images, BskyImageWithAlt{
-			Alt:   "",
-			Image: *bskyBlob,
+			Alt:   fmt.Sprintf("Image %d", i),
+			Image: BskyImageUploadResp{},
 		})
+		log.Printf("Bsky Blob: %#v", bskyBlob)
+		log.Printf("Bsky Blob Ref: %#v", bskyBlob.Ref)
+		log.Printf("Bsky Blob Ref Link: %#v", bskyBlob.Ref.Link)
+		log.Printf("Bsky Blob MimeType: %#v", bskyBlob.MimeType)
+		log.Printf("Bsky Blob Size: %#v", bskyBlob.Size)
+		bskyMediaPost.Embed.Images[i].Image.MimeType = bskyBlob.MimeType
+		bskyMediaPost.Embed.Images[i].Image.Size = bskyBlob.Size
+		bskyMediaPost.Embed.Images[i].Image.Ref.Link = bskyBlob.Ref.Link
+
 	}
 	var buf bytes.Buffer
 	encodeErr = json.NewEncoder(&buf).Encode(bskyMediaPost)
