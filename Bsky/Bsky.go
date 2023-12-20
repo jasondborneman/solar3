@@ -24,8 +24,8 @@ type BskyAuthPost struct {
 }
 
 type BskyImageWithAlt struct {
-	Alt   string              `json:"alt"`
-	Image BskyImageUploadResp `json:"image"`
+	Alt   string        `json:"alt"`
+	Image BskyImageBlob `json:"image"`
 }
 
 type BskyMediaPost struct {
@@ -44,13 +44,17 @@ type BskyPost struct {
 	Record     BskyMediaPost `json:"record"`
 }
 
-type BskyImageUploadResp struct {
+type BskyImageBlob struct {
 	Type string `json:"$type"`
 	Ref  struct {
 		Link string `json:"$link"`
 	} `json:"ref"`
 	MimeType string `json:"mimeType"`
 	Size     int    `json:"size"`
+}
+
+type BskyImageUploadResp struct {
+	Blob BskyImageBlob `json:"blob"`
 }
 
 func PostWithMedia(message string, media [][]byte) error {
@@ -124,16 +128,16 @@ func PostWithMedia(message string, media [][]byte) error {
 		}
 		bskyMediaPost.Embed.Images = append(bskyMediaPost.Embed.Images, BskyImageWithAlt{
 			Alt:   fmt.Sprintf("Image %d", i),
-			Image: BskyImageUploadResp{},
+			Image: BskyImageBlob{},
 		})
 		log.Printf("Bsky Blob: %#v", bskyBlob)
-		log.Printf("Bsky Blob Ref: %#v", bskyBlob.Ref)
-		log.Printf("Bsky Blob Ref Link: %#v", bskyBlob.Ref.Link)
-		log.Printf("Bsky Blob MimeType: %#v", bskyBlob.MimeType)
-		log.Printf("Bsky Blob Size: %#v", bskyBlob.Size)
-		bskyMediaPost.Embed.Images[i].Image.MimeType = bskyBlob.MimeType
-		bskyMediaPost.Embed.Images[i].Image.Size = bskyBlob.Size
-		bskyMediaPost.Embed.Images[i].Image.Ref.Link = bskyBlob.Ref.Link
+		log.Printf("Bsky Blob Ref: %#v", bskyBlob.Blob.Ref)
+		log.Printf("Bsky Blob Ref Link: %#v", bskyBlob.Blob.Ref.Link)
+		log.Printf("Bsky Blob MimeType: %#v", bskyBlob.Blob.MimeType)
+		log.Printf("Bsky Blob Size: %#v", bskyBlob.Blob.Size)
+		bskyMediaPost.Embed.Images[i].Image.MimeType = bskyBlob.Blob.MimeType
+		bskyMediaPost.Embed.Images[i].Image.Size = bskyBlob.Blob.Size
+		bskyMediaPost.Embed.Images[i].Image.Ref.Link = bskyBlob.Blob.Ref.Link
 
 	}
 
