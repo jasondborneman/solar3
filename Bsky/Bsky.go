@@ -8,7 +8,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strings"
 	"time"
 )
 
@@ -17,6 +16,11 @@ var bskyUri = "https://bsky.social"
 type BskyAuth struct {
 	accessJwt  string
 	refreshJwt string
+}
+
+type BskyAuthPost struct {
+	Identifier string `json:"identifier"`
+	Password   string `json:"password"`
 }
 
 type BskyImageWithAlt struct {
@@ -44,9 +48,18 @@ func PostWithMedia(message string, media [][]byte) error {
 	}
 	handle := os.Getenv("BSKY_USER")
 	pass := os.Getenv("BSKY_PASS")
+	bskyAuthPost := &BskyAuthPost{
+		Identifier: handle,
+		Password:   pass,
+	}
+	var authBuf bytes.Buffer
+	encodeErr := json.NewEncoder(&authBuf).Encode(bskyAuthPost)
+	if encodeErr != nil {
+		log.Fatalf("Error encoding Bsky Auth Post: %s", encodeErr)
+		return encodeErr
+	}
 	url := fmt.Sprintf("%s/xrpc/com.atproto.server.createSession", bskyUri)
-	body := strings.NewReader(fmt.Sprintf(`{"identifier":%s,"password":%s}`, handle, pass))
-	resp, authErr := bskyClient.Post(url, "application/json", body)
+	resp, authErr := bskyClient.Post(url, "application/json", &authBuf)
 	if authErr != nil {
 		log.Fatalf("Error authenticating to Bsky: %s", authErr)
 		return authErr
@@ -93,7 +106,7 @@ func PostWithMedia(message string, media [][]byte) error {
 		})
 	}
 	var buf bytes.Buffer
-	encodeErr := json.NewEncoder(&buf).Encode(bskyMediaPost)
+	encodeErr = json.NewEncoder(&buf).Encode(bskyMediaPost)
 	if encodeErr != nil {
 		log.Fatalf("Error encoding Bsky Media Post: %s", encodeErr)
 		return encodeErr
