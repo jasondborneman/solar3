@@ -23,8 +23,8 @@ type BskyAuthPost struct {
 }
 
 type BskyImageWithAlt struct {
-	Alt   string `json:"alt"`
-	Image string `json:"image"`
+	Alt   string              `json:"alt"`
+	Image BskyImageUploadResp `json:"image"`
 }
 
 type BskyMediaPost struct {
@@ -38,7 +38,12 @@ type BskyMediaPost struct {
 }
 
 type BskyImageUploadResp struct {
-	Blob string `json:"blob"`
+	Type string `json:"$type"`
+	Ref  struct {
+		Link string `json:"$link"`
+	} `json:"ref"`
+	MimeType string `json:"mimeType"`
+	Size     int    `json:"size"`
 }
 
 func PostWithMedia(message string, media [][]byte) error {
@@ -86,6 +91,10 @@ func PostWithMedia(message string, media [][]byte) error {
 	for _, mediaBytes := range media {
 
 		uploadImgReq, uploadImgErr := http.NewRequest("POST", url, bytes.NewReader(mediaBytes))
+		if uploadImgErr != nil {
+			log.Fatalf("Error creating Bsky Image Upload request: %s", uploadImgErr)
+			return uploadImgErr
+		}
 		uploadImgReq.Header.Set("Content-Type", "image/png")
 		uploadImgReq.Header.Set("Authorization", fmt.Sprintf("Bearer %s", bskyAuth.AccessJwt))
 		uploadImgResp, uploadImgErr := bskyClient.Do(uploadImgReq)
@@ -101,7 +110,7 @@ func PostWithMedia(message string, media [][]byte) error {
 		}
 		bskyMediaPost.Embed.Images = append(bskyMediaPost.Embed.Images, BskyImageWithAlt{
 			Alt:   "",
-			Image: bskyBlob.Blob,
+			Image: *bskyBlob,
 		})
 	}
 	var buf bytes.Buffer
