@@ -38,6 +38,12 @@ type BskyMediaPost struct {
 	} `json:"embed"`
 }
 
+type BskyPost struct {
+	Collection string        `json:"collection"`
+	Repo       string        `json:"repo"`
+	Record     BskyMediaPost `json:"record"`
+}
+
 type BskyImageUploadResp struct {
 	Type string `json:"$type"`
 	Ref  struct {
@@ -89,10 +95,12 @@ func PostWithMedia(message string, media [][]byte) error {
 	bskyMediaPost.Embed.Type = "app.bsky.embed.image"
 	bskyMediaPost.Embed.Images = []BskyImageWithAlt{}
 	for i, mediaBytes := range media {
-		dataField := []byte("data=")
-		mediaBytes2 := append(dataField, mediaBytes...)
+		if len(mediaBytes) > 1000000 {
+			log.Fatalf("Image %d is too large: %d", i, len(mediaBytes))
+			return errors.New("Image too large")
+		}
 		url = fmt.Sprintf("%s/xrpc/com.atproto.repo.uploadBlob", bskyUri)
-		uploadImgReq, uploadImgErr := http.NewRequest("POST", url, bytes.NewReader(mediaBytes2))
+		uploadImgReq, uploadImgErr := http.NewRequest("POST", url, bytes.NewReader(mediaBytes))
 		if uploadImgErr != nil {
 			log.Fatalf("Error creating Bsky Image Upload request: %s", uploadImgErr)
 			return uploadImgErr
@@ -124,11 +132,18 @@ func PostWithMedia(message string, media [][]byte) error {
 		bskyMediaPost.Embed.Images[i].Image.Ref.Link = bskyBlob.Ref.Link
 
 	}
+
+	bskyPost := &BskyPost{
+		Collection: "app.bsky.feed.post",
+		Repo:       handle,
+		Record:     *bskyMediaPost,
+	}
+
 	var buf bytes.Buffer
-	encodeErr = json.NewEncoder(&buf).Encode(bskyMediaPost)
+	encodeErr = json.NewEncoder(&buf).Encode(bskyPost)
 	postBody := buf.String()
 	log.Printf("Posting to Bsky: %s", postBody)
-	log.Printf("Posting to Bsky (struct): %#v", bskyMediaPost)
+	log.Printf("Posting to Bsky (struct): %#v", bskyPost)
 	if encodeErr != nil {
 		log.Fatalf("Error encoding Bsky Media Post: %s", encodeErr)
 		return encodeErr
