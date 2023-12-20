@@ -115,6 +115,8 @@ func PostWithMedia(message string, media [][]byte) error {
 	}
 	var buf bytes.Buffer
 	encodeErr = json.NewEncoder(&buf).Encode(bskyMediaPost)
+	postBody := buf.String()
+	log.Printf("Posting to Bsky: %s", postBody)
 	if encodeErr != nil {
 		log.Fatalf("Error encoding Bsky Media Post: %s", encodeErr)
 		return encodeErr
